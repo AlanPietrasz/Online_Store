@@ -1,0 +1,123 @@
+.error {
+    color: red
+}
+
+body {
+    font-family: Arial, sans-serif; /* Change font style */
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4; /* Light grey background */
+    color: #333; /* Dark grey text */
+}
+
+.header {
+    background-color: #333; /* Dark grey background */
+    color: white;
+    text-align: center;
+    padding: 1em 0;
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 2.5em;
+}
+
+.nav-bar {
+    background-color: #555; /* Darker grey for nav */
+    overflow: hidden;
+}
+
+.nav-bar a {
+    float: left;
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.nav-bar a:hover {
+    background-color: #ddd; /* Light grey background for hover */
+    color: black; /* Black text for hover */
+}
+
+.dropdown {
+    float: left;
+    overflow: hidden;
+}
+
+.dropdown .dropbtn {
+    font-size: 16px;    
+    border: none;
+    outline: none;
+    color: white;
+    padding: 14px 16px;
+    background-color: inherit;
+    font-family: inherit; /* Ważne dla pionowego wyrównania elementów menu */
+    margin: 0; /* Ważne dla pionowego wyrównania elementów menu */
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+.dropdown-content a {
+    float: none;
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    text-align: left;
+}
+
+.dropdown-content a:hover {
+    background-color: #ddd;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.centered-div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+html, body, form {
+    height: 100%;
+    overflow: hidden;
+}
+
+form {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#login {
+    padding: 20px;
+    border: 1px solid black;
+}
+
+#login div {
+    overflow: auto;
+}
+
+#login input {
+    float: right;
+}
+
+button {
+    clear: both;
+}
+
+.message {
+    color: red;
+}

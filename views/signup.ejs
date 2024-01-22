@@ -1,0 +1,47 @@
+<!-- signup.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Sign Up</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+    <form method="POST">
+        <div id='login'>
+            <div>
+                Sign Up
+            </div>
+            <div>
+                <input type='text' name='username' value='<%= locals.username || "" %>' required />
+                <label>Username:</label>
+            </div>
+            <div>
+                <input type='email' name='email' value='<%= locals.email || "" %>' required />
+                <label>Email:</label>
+            </div>
+            <div>
+                <input type='password' name='password' required />
+                <label>Password:</label>
+            </div>
+            <div>
+                <input type='password' name='confirm_password' required />
+                <label>Repeat password:</label>
+            </div>
+            <div>
+                <button>Sign Up</button>
+            </div>
+            <% if ( locals.messages ) { %>
+                <div class='message'>
+                    <% locals.messages.forEach( message => { %>
+                        <%= message %><br>
+                    <% }) %>
+                </div>
+            <% } %>
+        </div>
+    </form>
+</body>
+
+</html>
