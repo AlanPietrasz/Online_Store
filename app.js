@@ -1,8 +1,10 @@
 // app.js
 var http = require('http');
 var authorize = require('./authorize')
+var { isUserInRole, doesUserExist, addUser, hasSufficientFunds, updateUserBalance, addUserRole, removeUserRole } = require('./db');
 var express = require('express');
 var cookieParser = require('cookie-parser');
+
 
 var app = express();
 
@@ -16,11 +18,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser('sgs90890s8g90as8rg90as8g9r8a0srg8'));
 
 app.get("/", authorize(), (req, res) => {
-    res.render("index", {user: req.user});
+    res.render("index", { user: req.user });
 });
 
 app.get('/logout', authorize(), (req, res) => {
-    res.cookie('user', '', { maxAge: -1 } );
+    res.cookie('user', '', { maxAge: -1 });
     res.redirect('/');
 });
 
@@ -39,9 +41,9 @@ app.post('/login', authorize(), (req, res) => {
         } else {
             res.redirect('/');
         }
-        
+
     } else {
-        res.render('login', { message: "Zła nazwa logowania lub hasło" });
+        res.render('login', { message: "Wrong username or password" });
     }
 });
 
@@ -49,19 +51,43 @@ app.get("/signup", (req, res) => {
     res.render("signup");
 });
 
-app.post('/signup', (req, res) => {
+app.post('/signup', async (req, res) => {
     var username = req.body.username;
     var email = req.body.email;
     var password = req.body.password;
     var confirmPassword = req.body.confirm_password;
+    var existingUser;
+
+    try {
+        existingUser = await doesUserExist(username);
+    } catch (err) {
+        console.log(err);
+        return res.render('signup', {
+            username,
+            email,
+            messages: ['An unexpected error occurred. Please try again.']
+        });
+    }
 
     if (username && username.length > 5 &&
         email && email.length > 5 &&
         password && password.length > 5 &&
-        password == confirmPassword) {
+        password == confirmPassword &&
+        !existingUser) {
 
-        res.cookie('user', username, { signed: true });
-        res.redirect('/account');
+        try {
+
+
+            res.cookie('user', username, { signed: true });
+            res.redirect('/account');
+        } catch (err) {
+            console.log(err);
+            return res.render('signup', {
+                username,
+                email,
+                messages: ['An unexpected error occurred. Please try again.']
+            });
+        }
     }
     else {
         var messages = ['Fill in all fields correctly:'];
@@ -77,37 +103,31 @@ app.post('/signup', (req, res) => {
         if (password !== confirmPassword) {
             messages.push('- The passwords given are different')
         }
+        if (existingUser) {
+            messages.push('- Username is already taken, please choose a different one')
+        }
         return res.render('signup', {
             username,
             email,
             messages
         });
     }
-    // if (username && username.length > 5) {
-    //     res.redirect('/userinfo?username=' + username);
-    // } else {
-    //     res.render('index', {
-    //         username: username,
-    //         message: 'Nazwa użytkownika musi być dłuższa niż 5 znaków'
-    //     });
-    // }
 });
 
 app.get('/account', authorize('user', 'admin'), (req, res) => {
-    var user = req.user;
-    res.render('account', { user })
+    res.render('account', { user: req.user });
 });
 
 app.get('/leaderboard', authorize(), (req, res) => {
-    res.render('leaderboard')
+    res.render('leaderboard', {user: req.user});
 });
 
 app.get('/shop', authorize(), (req, res) => {
-    res.render('shop')
+    res.render('shop', {user: req.user});
 });
 
 app.get('/moneymaker', authorize('user'), (req, res) => {
-    res.render('moneymaker');
+    res.render('moneymaker', {user: req.user});
 });
 
 app.use((req, res, next) => {

@@ -1,13 +1,25 @@
 <!-- shop.ejs -->
+<!-- index.ejs -->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="style.css" />
+    <title>Shop</title>
 </head>
+
 <body>
-    Shop
-    <a href="/">Home Page</a>
+    <div class="header">
+        <h1>Shop</h1>
+    </div>
+
+    <%- include('navigationbar', locals.user ) %>
+
+    <!-- TODO -->
+
 </body>
+
 </html>

@@ -6,22 +6,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Account</title>
     <link rel="stylesheet" href="style.css" />
+    <title>Account</title>
 </head>
 
 <body>
     <div class="header">
-        <h1>Dashboard</h1>
+        <h1>Account</h1>
     </div>
-    <div class="nav-bar">
-        <a href="/">Home Page</a>
-        <a href="shop">Shop</a>
-        <a href="leaderboard">Leaderboard</a>
-        <a href="moneymaker">Moneymaker</a>
-        <a href='/logout'>Log Out</a>
-    </div>
-    Account: <%= locals.user %> 
+
+    <%- include('navigationbar', locals.user ) %>
+
+    Account: <%= locals.user %>
+    
+    <!-- TODO -->
+    
 </body>
 
 </html>

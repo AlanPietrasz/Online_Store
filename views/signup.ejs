@@ -5,13 +5,13 @@
 <head>
     <meta charset="UTF-8">
     <title>Sign Up</title>
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="loginstyle.css" />
 </head>
 
 <body>
     <form method="POST">
         <div id='login'>
-            <div>
+            <div class="centered-div">
                 Sign Up
             </div>
             <div>
@@ -28,18 +28,18 @@
             </div>
             <div>
                 <input type='password' name='confirm_password' required />
-                <label>Repeat password:</label>
+                <label>Confirm password:</label>
             </div>
             <div>
                 <button>Sign Up</button>
             </div>
             <% if ( locals.messages ) { %>
                 <div class='message'>
-                    <% locals.messages.forEach( message => { %>
+                    <% locals.messages.forEach( message=> { %>
                         <%= message %><br>
-                    <% }) %>
+                            <% }) %>
                 </div>
-            <% } %>
+                <% } %>
         </div>
     </form>
 </body>

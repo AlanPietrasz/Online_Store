@@ -1,8 +1,5 @@
 // authorize.js
-function isUserInRole(user, role) {
-    // trywialna implementacja na potrzeby demonstracyjne
-    return user == role;
-}
+var { isUserInRole } = require('./db');
 /**
 *
 * @param {http.IncomingMessage} req
@@ -22,7 +19,7 @@ function authorize(...roles) {
         } else if (roles.length == 0) {
             return next();
         }
-        // fallback na brak autoryzacji
+
         res.redirect('/login?returnUrl=' + req.url);
     }
 }

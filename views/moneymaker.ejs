@@ -4,10 +4,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="style.css" />
+    <title>Moneymaker</title>
 </head>
 <body>
-    Moneymaker
-    Account: <%= locals.user %>. <a href='/logout'>Log Out</a>
+    <div class="header">
+        <h1>Moneymaker</h1>
+    </div>
+
+    <%- include('navigationbar', locals.user ) %>
+
+    <!-- TODO -->
+    
 </body>
 </html>
+
+

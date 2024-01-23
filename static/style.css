@@ -37,6 +37,16 @@ body {
     transition: 0.3s;
 }
 
+.nav-bar-div {
+    float: left;
+    display: block;
+    color: rgb(115, 130, 216);
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
 .nav-bar a:hover {
     background-color: #ddd; /* Light grey background for hover */
     color: black; /* Black text for hover */
@@ -88,36 +98,4 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-}
-
-html, body, form {
-    height: 100%;
-    overflow: hidden;
-}
-
-form {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-#login {
-    padding: 20px;
-    border: 1px solid black;
-}
-
-#login div {
-    overflow: auto;
-}
-
-#login input {
-    float: right;
-}
-
-button {
-    clear: both;
-}
-
-.message {
-    color: red;
 }
