@@ -1,7 +1,15 @@
 // app.js
 var http = require('http');
 var authorize = require('./authorize')
-var { isUserInRole, doesUserExist, addUser, hasSufficientFunds, updateUserBalance, addUserRole, removeUserRole } = require('./db');
+var { 
+    isUserInRole, 
+    doesUserExist, 
+    addUser, 
+    hasSufficientFunds, 
+    updateUserBalance, 
+    addUserRole, 
+    removeUserRole,
+    correctPassword } = require('./db');
 var express = require('express');
 var cookieParser = require('cookie-parser');
 
@@ -30,10 +38,11 @@ app.get("/login", (req, res) => {
     res.render("login");
 });
 
-app.post('/login', authorize(), (req, res) => {
+app.post('/login', authorize(), async (req, res) => {
     var username = req.body.txtUser;
     var pwd = req.body.txtPwd;
-    if (username == pwd) {
+
+    if (await correctPassword(username, pwd)) {
         res.cookie('user', username, { signed: true });
         var returnUrl = req.query.returnUrl;
         if (returnUrl) {
@@ -41,7 +50,6 @@ app.post('/login', authorize(), (req, res) => {
         } else {
             res.redirect('/');
         }
-
     } else {
         res.render('login', { message: "Wrong username or password" });
     }

@@ -208,4 +208,35 @@ async function removeUserRole(username, roleName) {
     }
 }
 
-module.exports = { isUserInRole, doesUserExist, addUser, hasSufficientFunds, updateUserBalance, addUserRole, removeUserRole };
+/**
+ * Checks if provided password is correct.
+ * 
+ * @param {string} username - The username of the user.
+ * @param {string} password - The password provided by user.
+ * @returns {Promise<void>}
+ */
+async function correctPassword(username, password) {
+    try {
+        await conn.connect();
+        const userRepo = new UserRepository(conn);
+        return await userRepo.checkLogin(username, password);
+    } catch (error) {
+        console.error("Error checking if password is correct:", error);
+        return false
+    } finally {
+        if (conn.connected) {
+            conn.close();
+        }
+    }
+}
+
+module.exports = { 
+    isUserInRole, 
+    doesUserExist, 
+    addUser, 
+    hasSufficientFunds, 
+    updateUserBalance, 
+    addUserRole, 
+    removeUserRole, 
+    correctPassword 
+};
