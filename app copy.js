@@ -6,6 +6,7 @@ var trywrap = require('./trywrap');
 var express = require('express');
 var cookieParser = require('cookie-parser');
 
+
 var app = express();
 
 app.set('view engine', 'ejs');
@@ -153,14 +154,7 @@ app.use((err, req, res, next) => {
     res.end(`Error handling request: ${err}`);
 });
 
-db.initConnectionPool()
-  .then(() => {
-    console.log('Database connected successfully.');
 
-    http.createServer(app).listen(3000, () => {
-      console.log("Server listening on http://localhost:3000/");
-    });
-  })
-  .catch(err => {
-    console.error('Error while connecting to the database:', err);
-  });
+http.createServer(app).listen(3000);
+
+console.log("http://localhost:3000/")
