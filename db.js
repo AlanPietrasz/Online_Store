@@ -158,6 +158,16 @@ async function correctPassword(username, password) {
     return await userRepo.checkLogin(username, password);
 }
 
+/**
+ * Retrieves the top users.
+ * 
+ * @returns {Promise<Array>} An array of the top users.
+ */
+async function topUsers() {
+    const userRepo = new UserRepository(conn);
+    return await userRepo.retrieveTopUsersByBalance(10);
+}
+
 module.exports = { 
     initConnectionPool,
     isUserInRole, 
@@ -168,5 +178,6 @@ module.exports = {
     updateUserBalance, 
     addUserRole, 
     removeUserRole, 
-    correctPassword 
+    correctPassword,
+    topUsers,
 };

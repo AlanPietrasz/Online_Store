@@ -1,0 +1,42 @@
+/* Add this to your static/style.css file or the relevant CSS file linked in your EJS template */
+
+.leaderboard-container {
+    width: 80%;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.leaderboard-container h2 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.leaderboard {
+    width: 100%;
+    margin-top: 20px;
+    border-collapse: collapse;
+}
+
+.leaderboard th,
+.leaderboard td {
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
+.leaderboard th {
+    background-color: #f0f0f0;
+    color: #333;
+}
+
+.leaderboard td {
+    background-color: #fff;
+}
+
+.leaderboard tr:nth-child(even) td {
+    background-color: #f8f8f8;
+}
+

@@ -134,7 +134,12 @@ app.post('/delete-account', authorize('user'), async (req, res) => {
 });
 
 app.get('/leaderboard', authorize(), async (req, res) => {
-    res.render('leaderboard', {user: req.user});
+    const [topUsersArr, err] = await trywrap(db.topUsers());
+    if (err) {
+        console.error(err);
+        res.render('error', { message: 'Error retrieving the leaderboard.' });
+    }
+    res.render('leaderboard', {user: req.user, topUsers: topUsersArr});
 });
 
 app.get('/shop', authorize(), async (req, res) => {

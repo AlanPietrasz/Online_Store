@@ -205,7 +205,21 @@ class UserRepository {
         }
     }
 
-    
+    /**
+    * Retrieves the top users by balance from the database.
+    * @returns {Promise<Array>} An array of the top users.
+    */
+    async retrieveTopUsersByBalance(number) {
+        try {
+            var req = new mssql.Request(this.conn);
+            req.input("number", number)
+            var res = await req.query(`SELECT TOP (${number}) Username, balance FROM LoggedInUsers ORDER BY balance DESC`);
+            return res.recordset;
+        } catch (err) {
+            console.error("Error retrieving top users by balance:", err);
+            throw err;
+        }
+    }    
 }
 
 class RoleRepository {

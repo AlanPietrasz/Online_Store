@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="leaderboard.css" />
     <title>Leaderboard</title>
 </head>
 
@@ -17,6 +18,31 @@
 
     <%- include('navigationbar', locals.user ) %>
 
+    <div class="leaderboard-container">
+        <h2>Top 10 Users</h2>
+        <table class="leaderboard">
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Username</th>
+                    <th>Balance</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if (locals.topUsers) { %>
+                <% locals.topUsers.forEach(function(user, index) { %>
+                    <tr>
+                        <td><%= index + 1 %></td>
+                        <td><%= user.Username %></td>
+                        <td>$<%= user.balance.toFixed(2) %></td>
+                    </tr>
+                <% }); %>
+                <% } else if (locals.message) { %>
+                    <%= locals.message %>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
     <!-- TODO -->
     
 </body>
