@@ -1,4 +1,5 @@
 // repositories.js
+var trywrap = require('./trywrap');
 var mssql = require('mssql');
 var bcrypt = require('bcrypt');
 
@@ -21,7 +22,11 @@ class UserRepository {
             var req = new mssql.Request(this.conn);
             if (username) req.input('Username', username);
             var res = await req.query('select * from LoggedInUsers' + (username ? ' where Username=@Username' : ''));
-            return username ? res.recordset[0] : res.recordset;
+            if (username) {
+                return res.recordset.length > 0 ? res.recordset[0] : null;
+            } else {
+                return res.recordset;
+            }
         } catch (err) {
             console.log(err);
             return [];
@@ -30,31 +35,35 @@ class UserRepository {
 
     /**
     * Inserts a new user into the database.
-    * @param {Object} newUser - An object containing the new user's information, including username, email, password, balance, and multiplier.
+    * @param {Object} newUser - An object containing the new user's information, including username, email, password.
     * @returns {Promise<number>} The ID of the newly inserted user.
     * @throws {Error} If there is an error during the database operation.
     */
     async insert(newUser) {
         if (!newUser) return;
-        try {
-            if (await this.retrieve(newUser.username)) throw Error('Username is already taken');
 
-            const rounds = 12;
-            const hash = await bcrypt.hash(newUser.password, rounds);
-
-            var req = new mssql.Request(this.conn);
-            req.input("Username", newUser.username);
-            req.input("email", newUser.email);
-            req.input("balance", newUser.balance);
-            req.input("hash", hash);
-            req.input("multiplier", newUser.multiplier);
-
-            var res = await req.query('insert into LoggedInUsers (Username, email, balance, hash, multiplier) values (@Username, @email, @balance, @hash, @multiplier) select scope_identity() as id');
-            return res.recordset[0].id;
-        } catch (err) {
+        var [user, err] = await trywrap(this.retrieve(newUser.username));
+        if (err) {
             console.log(err);
             throw err;
         }
+        if (user) throw Error('Username is already taken');
+
+        const rounds = 12;
+        const hash = await bcrypt.hash(newUser.password, rounds);
+
+        newUser.balance = 0;
+        newUser.multiplier = 1;
+
+        var req = new mssql.Request(this.conn);
+        req.input("Username", newUser.username);
+        req.input("email", newUser.email);
+        req.input("balance", newUser.balance);
+        req.input("hash", hash);
+        req.input("multiplier", newUser.multiplier);
+
+        var res = await req.query('insert into LoggedInUsers (Username, email, balance, hash, multiplier) values (@Username, @email, @balance, @hash, @multiplier) select scope_identity() as id');
+        return res.recordset[0].id;
     }
 
     /**
@@ -178,6 +187,25 @@ class UserRepository {
             throw err;
         }
     }
+
+    /**
+     * Retrieves all roles associated with a specific user.
+     * @param {number} userId - The ID of the user.
+     * @returns {Promise<Array>} An array of role objects associated with the user.
+     */
+    async getUserRoles(userId) {
+        try {
+            var req = new mssql.Request(this.conn);
+            req.input("ID_LoggedInUser", userId);
+            var res = await req.query('select R.* from Role R inner join LoggedInUser_Role LUR on R.ID = LUR.ID_Role where LUR.ID_LoggedInUser = @ID_LoggedInUser');
+            return res.recordset;
+        } catch (err) {
+            console.log(err);
+            throw err;
+        }
+    }
+
+    
 }
 
 class RoleRepository {

@@ -7,12 +7,20 @@ var { isUserInRole } = require('./db');
 * @param {*} next
 */
 function authorize(...roles) {
-    return function (req, res, next) {
+    return async function (req, res, next) {
         if (req.signedCookies.user) {
             let user = req.signedCookies.user;
+            let isInRole = false;
+
+            for (let i = 0; i < roles.length; i++) {
+                if (await isUserInRole(user, roles[i])) {
+                    isInRole = true;
+                    break;
+                }
+            }
+
             if (roles.length == 0 ||
-                roles.some(role => isUserInRole(user, role))
-            ) {
+                isInRole) {
                 req.user = user;
                 return next();
             }
@@ -20,7 +28,7 @@ function authorize(...roles) {
             return next();
         }
 
-        res.redirect('/login?returnUrl=' + req.url);
+        res.redirect('/login?returnUrl=' + req.url + '&message=Requires being in one of the roles: ' + roles.join(", "));
     }
 }
 

@@ -11,6 +11,11 @@
 <body>
     <form method="POST">
         <div id='login'>
+            <% if (locals.requirementsMessage) { %>
+            <div class="requirements-message">
+                <%= locals.requirementsMessage %>
+            </div>
+            <% } %>
             <div class="centered-div">
                 Log In
             </div>

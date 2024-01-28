@@ -1,0 +1,23 @@
+/* accountstyle.css */
+.delete-account {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.delete-account form {
+    display: inline-block;
+}
+
+.delete-account button {
+    background-color: red;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.delete-account button:hover {
+    background-color: darkred;
+}

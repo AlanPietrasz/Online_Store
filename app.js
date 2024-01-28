@@ -1,15 +1,8 @@
 // app.js
 var http = require('http');
 var authorize = require('./authorize')
-var { 
-    isUserInRole, 
-    doesUserExist, 
-    addUser, 
-    hasSufficientFunds, 
-    updateUserBalance, 
-    addUserRole, 
-    removeUserRole,
-    correctPassword } = require('./db');
+var db = require('./db');
+var trywrap = require('./trywrap');
 var express = require('express');
 var cookieParser = require('cookie-parser');
 
@@ -25,24 +18,28 @@ app.set('etag', false);
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser('sgs90890s8g90as8rg90as8g9r8a0srg8'));
 
-app.get("/", authorize(), (req, res) => {
+app.get("/", authorize(), async (req, res) => {
     res.render("index", { user: req.user });
 });
 
-app.get('/logout', authorize(), (req, res) => {
+app.get('/logout', authorize(), async (req, res) => {
     res.cookie('user', '', { maxAge: -1 });
     res.redirect('/');
 });
 
-app.get("/login", (req, res) => {
-    res.render("login");
+app.get("/login", async (req, res) => {
+    var requirementsMessage = req.query.message;
+    res.render("login", { requirementsMessage });
 });
 
 app.post('/login', authorize(), async (req, res) => {
     var username = req.body.txtUser;
     var pwd = req.body.txtPwd;
+    
 
-    if (await correctPassword(username, pwd)) {
+    var [correct, err] = await trywrap(db.correctPassword(username, pwd));
+
+    if (correct) {
         res.cookie('user', username, { signed: true });
         var returnUrl = req.query.returnUrl;
         if (returnUrl) {
@@ -51,7 +48,10 @@ app.post('/login', authorize(), async (req, res) => {
             res.redirect('/');
         }
     } else {
-        res.render('login', { message: "Wrong username or password" });
+        if (err) console.log(err);
+        var message = err ? 'An unexpected error occurred. Please try again.' : 
+                            'Wrong username or password';
+        res.render('login', { message });
     }
 });
 
@@ -60,44 +60,45 @@ app.get("/signup", (req, res) => {
 });
 
 app.post('/signup', async (req, res) => {
-    var username = req.body.username;
-    var email = req.body.email;
-    var password = req.body.password;
-    var confirmPassword = req.body.confirm_password;
-    var existingUser;
-
-    try {
-        existingUser = await doesUserExist(username);
-    } catch (err) {
+    function signupError(err) {
         console.log(err);
-        return res.render('signup', {
+        res.render('signup', {
             username,
             email,
             messages: ['An unexpected error occurred. Please try again.']
         });
     }
+    var username = req.body.username;
+    var email = req.body.email;
+    var password = req.body.password;
+    var confirmPassword = req.body.confirm_password;
+
+    var [existingUser, err] = await trywrap(db.doesUserExist(username));
+    if (err) signupError(err);
 
     if (username && username.length > 5 &&
         email && email.length > 5 &&
         password && password.length > 5 &&
         password == confirmPassword &&
         !existingUser) {
-
-        try {
-
-
-            res.cookie('user', username, { signed: true });
-            res.redirect('/account');
-        } catch (err) {
-            console.log(err);
-            return res.render('signup', {
-                username,
-                email,
-                messages: ['An unexpected error occurred. Please try again.']
-            });
+        
+        var userData = {
+            username,
+            email,
+            password
         }
-    }
-    else {
+
+
+        var [userId, err] = await trywrap(db.addUser(userData));
+        if (err) signupError(err);
+
+        var [added, err] = await trywrap(db.addUserRole(username, 'user'))
+        if (err) signupError(err);
+
+        res.cookie('user', username, { signed: true });
+        res.redirect('/account');
+
+    } else {
         var messages = ['Fill in all fields correctly:'];
         if (!(username && username.length > 5)) {
             messages.push('- Username should be longer than 5 characters')
@@ -114,7 +115,7 @@ app.post('/signup', async (req, res) => {
         if (existingUser) {
             messages.push('- Username is already taken, please choose a different one')
         }
-        return res.render('signup', {
+        res.render('signup', {
             username,
             email,
             messages
@@ -122,19 +123,26 @@ app.post('/signup', async (req, res) => {
     }
 });
 
-app.get('/account', authorize('user', 'admin'), (req, res) => {
+app.get('/account', authorize('user', 'admin'), async (req, res) => {
     res.render('account', { user: req.user });
 });
 
-app.get('/leaderboard', authorize(), (req, res) => {
+app.post('/delete-account', authorize('user'), async (req, res) => {
+    const username = req.body.username;
+
+    await db.deleteUserAndRoles(username);
+    res.redirect('/logout');
+});
+
+app.get('/leaderboard', authorize(), async (req, res) => {
     res.render('leaderboard', {user: req.user});
 });
 
-app.get('/shop', authorize(), (req, res) => {
+app.get('/shop', authorize(), async (req, res) => {
     res.render('shop', {user: req.user});
 });
 
-app.get('/moneymaker', authorize('user'), (req, res) => {
+app.get('/moneymaker', authorize('user'), async (req, res) => {
     res.render('moneymaker', {user: req.user});
 });
 

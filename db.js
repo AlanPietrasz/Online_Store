@@ -6,29 +6,6 @@ var config = 'server=localhost,1433;database=LoggedInUsersDB;user id=superadmin;
 var conn = new mssql.ConnectionPool(config);
 
 /**
- * Checks if a user exists in the database.
- * 
- * @param {string} username - The username to check in the database.
- * @returns {Promise<boolean>} True if the user exists, false otherwise.
- */
-async function doesUserExist(username) {
-    try {
-        await conn.connect();
-        const userRepo = new UserRepository(conn);
-
-        const user = await userRepo.retrieve(username);
-        return user !== undefined && user.length > 0;
-    } catch (error) {
-        console.error("Error checking if user exists:", error);
-        throw error;
-    } finally {
-        if (conn.connected) {
-            conn.close();
-        }
-    }
-}
-
-/**
  * Checks if a user is associated with a specific role.
  * 
  * @param {string} username - The username of the user.
@@ -61,9 +38,32 @@ async function isUserInRole(username, roleName) {
 }
 
 /**
+ * Checks if a user exists in the database.
+ * 
+ * @param {string} username - The username to check in the database.
+ * @returns {Promise<boolean>} True if the user exists, false otherwise.
+ */
+async function doesUserExist(username) {
+    try {
+        await conn.connect();
+        const userRepo = new UserRepository(conn);
+
+        const exists = await userRepo.retrieve(username);
+        return exists;
+    } catch (error) {
+        console.error("Error checking if user exists:", error);
+        throw error;
+    } finally {
+        if (conn.connected) {
+            conn.close();
+        }
+    }
+}
+
+/**
  * Adds a new user to the database if they do not already exist.
  * 
- * @param {Object} userData - The data of the user to be added.
+ * @param {Object} userData - An object containing the new user's information, including username, email, password.
  * @returns {Promise<number>} The ID of the newly added user.
  * @throws {Error} If the user already exists.
  */
@@ -72,7 +72,7 @@ async function addUser(userData) {
         await conn.connect();
         const userRepo = new UserRepository(conn);
 
-        const exists = await doesUserExist(userData.Username);
+        const exists = await userRepo.retrieve(userData.username);
         if (exists) {
             throw new Error('User already exists');
         }
@@ -81,6 +81,34 @@ async function addUser(userData) {
         return userId;
     } catch (error) {
         console.error("Error adding user:", error);
+        throw error;
+    } finally {
+        if (conn.connected) {
+            conn.close();
+        }
+    }
+}
+
+/**
+ * Deletes a user and all associated roles from the database.
+ * 
+ * @param {number} username - The username of user to delete.
+ * @returns {Promise<void>} 
+ */
+async function deleteUserAndRoles(username) {
+    try {
+        await conn.connect();
+        const userRepo = new UserRepository(conn);
+
+        const user = await userRepo.retrieve(username);
+        const roles = await userRepo.getUserRoles(user.ID);
+        for (const role of roles) {
+            await userRepo.removeRoleFromUser(user.ID, role.ID);
+        }
+
+        await userRepo.delete(user.ID);
+    } catch (error) {
+        console.error("Error deleting user and roles:", error);
         throw error;
     } finally {
         if (conn.connected) {
@@ -166,7 +194,7 @@ async function addUserRole(username, roleName) {
             throw new Error('User or role not found');
         }
 
-        await roleRepo.addRoleToUser(user.ID, role.ID);
+        await userRepo.addRoleToUser(user.ID, role.ID);
     } catch (error) {
         console.error("Error adding role to user:", error);
         throw error;
@@ -234,6 +262,7 @@ module.exports = {
     isUserInRole, 
     doesUserExist, 
     addUser, 
+    deleteUserAndRoles,
     hasSufficientFunds, 
     updateUserBalance, 
     addUserRole, 

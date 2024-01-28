@@ -12,9 +12,9 @@ test('test', async ({ page }) => {
   await page.locator('input[name="txtUser"]').click();
   await page.locator('input[name="txtUser"]').click();
   await page.locator('input[name="txtUser"]').click();
-  await page.locator('input[name="txtUser"]').fill('superuser');
+  await page.locator('input[name="txtUser"]').fill('_testUser1');
   await page.locator('input[name="txtPwd"]').click();
-  await page.locator('input[name="txtPwd"]').fill('superuser');
+  await page.locator('input[name="txtPwd"]').fill('123456');
   await page.getByRole('button', { name: 'Log In' }).click();
-  await page.locator('div').filter({ hasText: /^superuser$/ }).click();
+  await page.locator('div').filter({ hasText: /^_testUser1$/ }).click();
 });
