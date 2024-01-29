@@ -171,7 +171,7 @@ class UserRepository {
             req.input("Username", username);
             const user = await req.query('SELECT * FROM LoggedInUsers WHERE Username=@Username');
             if (user.recordset.length > 0) {
-                return bcrypt.compare(password, user.recordset[0].hash);
+                return await bcrypt.compare(password, user.recordset[0].hash);
             }
             return false;
         } catch (err) {
