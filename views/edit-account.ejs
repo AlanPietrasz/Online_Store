@@ -1,0 +1,48 @@
+<!-- edit-account.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="accountstyle.css" />
+    <title>Edit Account</title>
+</head>
+
+<body>
+    <div class="header">
+        <h1>Edit Account</h1>
+    </div>
+
+    <%- include('navigationbar', locals.user ) %>
+
+    <div class="edit-account-form">
+        <form action="/update-account" method="POST">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" value="<%= userData.email %>">
+
+            <label for="password">New Password:</label>
+            <input type="password" id="password" name="password">
+
+            <label for="confirm_password">Confirm New Password:</label>
+            <input type="password" id="confirm_password" name="confirm_password">
+
+            <input type="hidden" name="username" value="<%= userData.Username %>">
+            
+            <button type="submit">Update Account</button>
+            <% if ( locals.messages ) { %>
+                <div class='message'>
+                    <% locals.messages.forEach( message=> { %>
+                        <%= message %><br>
+                            <% }) %>
+                </div>
+            <% } %>
+        </form>
+    </div>
+
+
+</body>
+
+</html>

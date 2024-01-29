@@ -99,3 +99,7 @@ body {
     justify-content: center;
     align-items: center;
 }
+
+.message {
+    color: red;
+}

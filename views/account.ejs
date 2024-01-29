@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="stylesheet" href="style.css" />
-    <link rel="stylesheet" href="accountstyle.ejs" />
+    <link rel="stylesheet" href="accountstyle.css" />
     <title>Account</title>
 </head>
 
@@ -18,18 +18,33 @@
 
     <%- include('navigationbar', locals.user ) %>
 
-    Account: <%= locals.user %>
-    
-    <div class="delete-account">
-        <form action="/delete-account" method="POST">
-            <input type="hidden" name="username" value="<%= locals.user %>">
-            <button type="submit" onclick="return confirm('Are you sure you want to delete your account? This action cannot be undone.');">Delete Account</button>
-        </form>
+    <div class="account-details">
+        <h2>Your Account Details</h2>
+        <p><strong>Username:</strong> <%= userData.Username %></p>
+        <!-- <p><strong>ID:</strong> <%= userData.ID %></p> -->
+        <p><strong>Email:</strong> <%= userData.email %></p>
+        <p><strong>Balance:</strong> <%= userData.balance %></p>
+        <p><strong>Multiplier:</strong> <%= userData.multiplier %></p>
+    </div>
+
+    <!-- TODO -->
+
+    <div class="account-actions">
+        <div class="edit-account">
+            <form action="/edit-account" method="GET">
+                <button type="submit">Edit Account</button>
+            </form>
+        </div>
+        
+        <div class="delete-account">
+            <form action="/delete-account" method="POST">
+                <input type="hidden" name="username" value="<%= locals.user %>">
+                <button type="submit" onclick="return confirm('Are you sure you want to delete your account? This action cannot be undone.');">Delete Account</button>
+            </form>
+        </div>
     </div>
 
 
-    <!-- TODO -->
-    
 </body>
 
 </html>

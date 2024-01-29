@@ -21,3 +21,75 @@
 .delete-account button:hover {
     background-color: darkred;
 }
+
+.account-details {
+    border: 1px solid #ddd;
+    padding: 20px;
+    margin: 20px 0;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.account-details h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.account-details p {
+    font-size: 1rem;
+    color: #666;
+    line-height: 1.5;
+    margin-bottom: 8px;
+}
+
+.account-details strong {
+    color: #333;
+    font-weight: bold;
+}
+
+.account-actions {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.edit-account, .delete-account {
+    display: inline-block;
+    margin: 0 10px;
+}
+
+.edit-account form, .delete-account form {
+    display: inline-block;
+}
+
+.edit-account button {
+    background-color: blue;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.edit-account button:hover {
+    background-color: darkblue;
+}
+
+.delete-account button {
+    background-color: red;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.delete-account button:hover {
+    background-color: darkred;
+}
+

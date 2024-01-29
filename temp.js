@@ -29,17 +29,21 @@ var conn = new mssql.ConnectionPool(config);
 //     }
 // })();
 
-(async function () {
-    try {
-        var userID = 7;
-        const roles = await deleteUserAndRoles(userID);
-        console.log(roles);
-    } catch (error) {
-        console.error(error);
-        throw error;
-    } finally {
-        if (conn.connected) {
-            conn.close();
-        }
-    }
-})();
+// (async function () {
+//     try {
+//         var userID = 7;
+//         const roles = await deleteUserAndRoles(userID);
+//         console.log(roles);
+//     } catch (error) {
+//         console.error(error);
+//         throw error;
+//     } finally {
+//         if (conn.connected) {
+//             conn.close();
+//         }
+//     }
+// })();
+
+o1 = {k1: 1, k2: 2}
+o2 = {k2: "2", k3: 3}
+console.log({...o1, ...o2});

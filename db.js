@@ -168,6 +168,43 @@ async function topUsers() {
     return await userRepo.retrieveTopUsersByBalance(10);
 }
 
+/**
+ * Retrieves detailed information about a user from the database.
+ *
+ * @param {string} username - The username of the user to retrieve details for.
+ * @returns {Promise<Object>} A promise that resolves to an object containing user details.
+ * @throws {Error} Throws an error if the database operation fails or the user cannot be found.
+ */
+async function retrieveUserDetails(username) {
+    const userRepo = new UserRepository(conn);
+    return await userRepo.retrieve(username);
+}
+
+/**
+ * Updates a user's details in the database.
+ *
+ * @param {string} username - The username of the user whose details are to be updated.
+ * @param {Object} userData - An object containing the user's updated details.
+ * @returns {Promise<void>}
+ * @throws {Error} If the update operation fails.
+ */
+async function updateUserDetails(username, userData) {
+    const userRepo = new UserRepository(conn);
+    const user = await userRepo.retrieve(username);
+    if (!user) {
+        throw new Error('User not found');
+    }
+
+    if (userData.password) {
+        const passwordUpdateResult = await userRepo.updatePassword(username, userData.password);
+        if (passwordUpdateResult === 0) {
+            throw new Error('Password update failed');
+        }
+    }
+
+    return await userRepo.update({ ...user, ...userData });
+}
+
 module.exports = { 
     initConnectionPool,
     isUserInRole, 
@@ -180,4 +217,6 @@ module.exports = {
     removeUserRole, 
     correctPassword,
     topUsers,
+    retrieveUserDetails,
+    updateUserDetails,
 };
