@@ -1,0 +1,148 @@
+/* shopstyle */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+}
+
+.header {
+    background-color: #333;
+    color: #fff;
+    padding: 10px 20px;
+    text-align: center;
+}
+
+form {
+    margin: 20px auto;
+    text-align: center;
+}
+
+input[type="text"],
+select {
+    padding: 10px;
+    margin: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+button {
+    padding: 10px 15px;
+    background-color: #5cb85c;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    opacity: 0.8;
+}
+
+.products {
+    display: block;
+    padding: 0;
+}
+
+.product {
+    background: white;
+    margin: 10px 0;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    width: 100%;
+}
+
+.product h2 {
+    margin: 0 0 10px 0;
+    color: #333;
+    font-size: 1.4em;
+    font-weight: bold;
+}
+
+.price, .quantity {
+    padding: 12px 15px;
+    margin: 10px 0;
+    border: 2px solid #aaa;
+    border-radius: 4px;
+    background-color: #f2f2f2;
+    font-weight: 600;
+    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.price-free, .quantity-not-available, .quantity-unlimited {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.product p {
+    color: #666;
+    font-size: 0.9em;
+}
+
+.pagination {
+    text-align: center;
+    padding: 20px 0;
+}
+
+.pagination a {
+    margin: 0 5px;
+    padding: 8px 16px;
+    background-color: #333;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+.pagination a.active {
+    background-color: #5cb85c;
+}
+
+.pagination a:hover {
+    background-color: #777;
+}
+
+.info-container {
+    text-align: center;
+}
+
+.price, .quantity,
+.price-free, .quantity-not-available, .quantity-unlimited {
+    display: inline-block;
+}
+
+
+/* Style dla ceny */
+.price {
+    /* wspólne style dla ceny */
+}
+
+.price-free {
+    color: #28a745; /* Zielony kolor dla darmowych produktów */
+    background-color: #d4edda;
+}
+
+.price-not-available {
+    color: #dc3545; /* Czerwony kolor dla produktów niedostępnych w sprzedaży */
+    background-color: #f8d7da;
+}
+
+/* Style dla ilości */
+.quantity {
+    /* wspólne style dla ilości */
+}
+
+.quantity-not-available {
+    color: #ffc107; /* Pomarańczowy kolor dla produktów niedostępnych */
+    background-color: #fff3cd;
+}
+
+.quantity-unlimited {
+    color: #17a2b8; /* Niebieski kolor dla produktów o nieograniczonej ilości */
+    background-color: #d1ecf1;
+}
+
+.quantity-normal {
+    color: #343a40; /* Standardowy kolor dla normalnej ilości */
+    background-color: #e2e3e5;
+}

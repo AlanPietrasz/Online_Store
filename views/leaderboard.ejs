@@ -33,7 +33,7 @@
                 <% locals.topUsers.forEach(function(user, index) { %>
                     <tr>
                         <td><%= index + 1 %></td>
-                        <td><%= user.Username %></td>
+                        <td><%= user.username %></td>
                         <td>$<%= user.balance.toFixed(2) %></td>
                     </tr>
                 <% }); %>

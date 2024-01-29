@@ -36,7 +36,7 @@ app.post('/login', authorize(), async (req, res) => {
     var pwd = req.body.txtPwd;
     
 
-    var [correct, err] = await trywrap(db.correctPassword(username, pwd));
+    var [correct, err] = await trywrap(db.checkPassword(username, pwd));
 
     if (correct) {
         res.cookie('user', username, { signed: true });
@@ -91,7 +91,7 @@ app.post('/signup', async (req, res) => {
         var [userId, err] = await trywrap(db.addUser(userData));
         if (err) signupError(err);
 
-        var [added, err] = await trywrap(db.addUserRole(username, 'user'))
+        var [added, err] = await trywrap(db.addRoleToUser(username, 'user'))
         if (err) signupError(err);
 
         res.cookie('user', username, { signed: true });
@@ -131,59 +131,6 @@ app.get('/edit-account', authorize('user', 'admin'), async (req, res) => {
     
     res.render('edit-account', { user: req.user, userData: userData });
 });
-
-// app.post('/update-account', authorize('user', 'admin'), async (req, res) => {
-//     const updateError = (err) => {
-//         console.log(err);
-//         res.render('edit-account', {
-//             username,
-//             userData,
-//             messages: ['An unexpected error occurred. Please try again.']
-//         });
-//     }
-//     const username = req.body.username;
-//     const email = req.body.email;
-//     const password = req.body.password;
-//     const confirmPassword = req.body.confirm_password;
-//     var userData = {
-//         username,
-//         email,
-//         password
-//     }
-    
-//     if (username && username.length > 5 &&
-//         email && email.length > 5 &&
-//         password && password.length > 5 &&
-//         password === confirmPassword) {
-
-//         userData = {
-//             username,
-//             email,
-//             password
-//         }
-
-//         const [updateResult, updateErr] = await trywrap(db.updateUserDetails(username, userData));
-//         if (updateErr) {
-//             updateError(updateErr);
-//             return;
-//         }
-
-//         res.redirect('/account');
-//     } else {
-//         const messages = ['Fill in all fields correctly:'];
-//         if (!(username && username.length > 5)) messages.push('- Username should be longer than 5 characters');
-//         if (!(email && email.length > 5)) messages.push('- An invalid email was provided');
-//         if (!(password && password.length > 5)) messages.push('- Password should be longer than 5 characters');
-//         if (password !== confirmPassword) messages.push('- The passwords given are different');
-
-//         res.render('edit-account', {
-//             username,
-//             userData,
-//             messages
-//         });
-//     }
-//     res.redirect('/account');
-// });
 
 app.post('/update-account', authorize('user', 'admin'), async (req, res) => {
     const username = req.user;
@@ -227,7 +174,6 @@ app.post('/update-account', authorize('user', 'admin'), async (req, res) => {
     }
 });
 
-
 app.post('/delete-account', authorize('user'), async (req, res) => {
     const username = req.body.username;
 
@@ -245,7 +191,31 @@ app.get('/leaderboard', authorize(), async (req, res) => {
 });
 
 app.get('/shop', authorize(), async (req, res) => {
-    res.render('shop', {user: req.user});
+    function shopError(err) {
+        console.log(err);
+        res.render('error', { message: 'Error retrieving products.' });
+    }
+
+    const orderBy = req.query.orderBy || 'productName';
+    const direction = req.query.direction === 'desc' ? 'DESC' : 'ASC';
+    const pageSize = parseInt(req.query.pageSize, 10) || 10;
+    const page = parseInt(req.query.page, 10) || 1;
+    const searchTerm = req.query.searchTerm || '';
+
+    const [paginationData, err] = await trywrap(db.getPaginatedProducts(orderBy, direction, page, pageSize, searchTerm));
+    if (err) shopError(err);
+
+    res.render('shop', {
+        user: req.user,
+        products: paginationData.products,
+        page: paginationData.page,
+        totalPages: paginationData.totalPages,
+        orderBy: paginationData.orderBy,
+        direction: paginationData.direction,
+        pageSize: paginationData.pageSize,
+        searchTerm: paginationData.searchTerm
+    });
+
 });
 
 app.get('/moneymaker', authorize('user'), async (req, res) => {

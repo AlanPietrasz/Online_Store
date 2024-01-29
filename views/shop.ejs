@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="shopstyle.css" />
     <title>Shop</title>
 </head>
 
@@ -17,6 +18,63 @@
 
     <%- include('navigationbar', locals.user ) %>
 
+    <form action="/shop" method="get">
+        <input type="text" name="searchTerm" placeholder="Search products..." value="<%= searchTerm || '' %>" />
+        <button type="submit">Search</button>
+    </form>
+
+    <form action="/shop" method="get">
+        <select name="orderBy">
+            <option value="productName">Product Name</option>
+            <option value="price">Price</option>
+        </select>
+        <select name="direction">
+            <option value="asc">Ascending</option>
+            <option value="desc">Descending</option>
+        </select>
+        <select name="pageSize">
+            <option value="10">10 per page</option>
+            <option value="20">20 per page</option>
+            <option value="30">30 per page</option>
+            <option value="40">40 per page</option>
+            <option value="50">50 per page</option>
+        </select>
+        <button type="submit">Sort and View Products</button>
+    </form>
+    
+    <div class="products">
+        <% products.forEach(function(product) { %>
+            <div class="product">
+                <h2><%= product.productName %></h2>
+                <p><%= product.description %></p>
+                <div class="info-container">
+                <% if (product.price === 0) { %>
+                    <p class="price price-free">Price: Free</p>
+                <% } else if (product.price === null) { %>
+                    <p class="price price-not-available">Price: Not yet available for purchase</p>
+                <% } else { %>
+                    <p class="price">Price: $<%= product.price.toFixed(2) %></p>
+                <% } %>
+
+                <% if (product.quantity === 0) { %>
+                    <p class="quantity quantity-not-available">Not available</p>
+                <% } else if (product.quantity === null) { %>
+                    <p class="quantity quantity-unlimited">Unlimited quantity</p>
+                <% } else { %>
+                    <p class="quantity">Quantity: <%= product.quantity %></p>
+                <% } %>
+                </div>
+            </div>
+        <% }); %>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination">
+        <% for(let i = 1; i <= totalPages; i++) { %>
+            <a href="/shop?page=<%= i %>&orderBy=<%= orderBy %>&direction=<%= direction %>&pageSize=<%= pageSize %>"
+            class="<%= page == i ? 'active' : '' %>"><%= i %></a>
+        <% } %>
+    </div>
     <!-- TODO -->
 
 </body>
