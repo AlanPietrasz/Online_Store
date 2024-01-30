@@ -119,7 +119,24 @@ app.get('/account', authorize('user', 'admin'), async (req, res) => {
         return res.render('error', { message: 'Error retrieving account details.' });
     }
 
-    res.render('account', { user: req.user, userData: userData });
+    var [purchasedProducts, purchaseError] = await trywrap(db.getPurchasedProductsByUser(req.user));
+    if (purchaseError) {
+        console.error(purchaseError);
+        return res.render('error', { message: 'Error retrieving purchase details.' });
+    }
+
+    const combinedProducts = purchasedProducts.reduce((acc, product) => {
+        if (acc[product.productName]) {
+            acc[product.productName].quantity += product.quantity;
+        } else {
+            acc[product.productName] = { ...product };
+        }
+        return acc;
+    }, {});
+
+    const combinedProductsArray = Object.values(combinedProducts);
+
+    res.render('account', { user: req.user, userData: userData, purchasedProducts: combinedProductsArray });
 });
 
 app.get('/edit-account', authorize('user', 'admin'), async (req, res) => {
@@ -205,18 +222,79 @@ app.get('/shop', authorize(), async (req, res) => {
     const [paginationData, err] = await trywrap(db.getPaginatedProducts(orderBy, direction, page, pageSize, searchTerm));
     if (err) shopError(err);
 
+    const userRoles = (await db.getUserRoles(req.user)).map(x => x.roleName);
+
     res.render('shop', {
         user: req.user,
+        userRoles: userRoles,
         products: paginationData.products,
         page: paginationData.page,
         totalPages: paginationData.totalPages,
         orderBy: paginationData.orderBy,
         direction: paginationData.direction,
         pageSize: paginationData.pageSize,
-        searchTerm: paginationData.searchTerm
+        searchTerm: paginationData.searchTerm,
+        error: req.query.error || null
     });
 
 });
+
+app.post('/addToCart', authorize('user'), async (req, res) => {
+    const user = await db.retrieveUser(req.user);
+    const { productId, quantity } = req.body;
+    try {
+        await db.addToCart(user.ID, productId, quantity);
+        res.redirect('/shop');
+    } catch (error) {
+        res.redirect('/shop?error=' + encodeURIComponent('Failed to add to cart: ' + error.message));
+    }
+});
+
+app.post('/removeFromCart', authorize('user'), async (req, res) => {
+    const user = await db.retrieveUser(req.user);
+    const { productId } = req.body;
+    await db.removeFromCart(user.ID, productId);
+    res.redirect('/cart');
+});
+
+app.get('/cart', authorize('user'), async (req, res) => {
+    const user = await db.retrieveUser(req.user);
+    const cartItems = await db.getCartItems(user.ID);
+
+    res.render('cart', {
+        user: req.user,
+        userRoles: (await db.getUserRoles(req.user)).map(x => x.roleName),
+        cartItems,
+    });
+});
+
+app.get('/checkout', authorize('user'), async (req, res) => {
+    const user = await db.retrieveUser(req.user);
+    const cartItems = await db.getCartItems(user.ID);
+    const userBalance = user.balance;
+
+    res.render('checkout', {
+        user: res.user,
+        userBalance,
+        cartItems
+    });
+});
+
+app.post('/finalize-purchase', authorize('user'), async (req, res) => {
+    const user = await db.retrieveUser(req.user);
+    const { totalCost } = req.body;
+    const checkoutResult = await db.checkout(user.ID, parseFloat(totalCost));
+
+    if (checkoutResult.success) {
+        res.redirect('/purchase-successful');
+    } else {
+        res.redirect('/checkout?error=' + encodeURIComponent(checkoutResult.message));
+    }
+})
+
+app.get('/purchase-successful', authorize('user'), async (req, res) => {
+    res.render('purchase-successful');
+})
 
 app.get('/moneymaker', authorize('user'), async (req, res) => {
     res.render('moneymaker', {user: req.user});

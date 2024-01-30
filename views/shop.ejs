@@ -18,6 +18,12 @@
 
     <%- include('navigationbar', locals.user ) %>
 
+    <% if (locals.error) { %>
+        <div class="alert alert-danger">
+            <%= locals.error %>
+        </div>
+    <% } %>
+
     <form action="/shop" method="get">
         <input type="text" name="searchTerm" placeholder="Search products..." value="<%= searchTerm || '' %>" />
         <button type="submit">Search</button>
@@ -62,6 +68,14 @@
                     <p class="quantity quantity-unlimited">Unlimited quantity</p>
                 <% } else { %>
                     <p class="quantity">Quantity: <%= product.quantity %></p>
+                <% } %>
+
+                <% if (userRoles.includes('user')) { %>
+                    <form action="/addToCart" method="post">
+                        <input type="hidden" name="productId" value="<%= product.ID %>">
+                        <input type="number" name="quantity" value="1" min="1">
+                        <button type="submit">Add to Cart</button>
+                    </form>
                 <% } %>
                 </div>
             </div>

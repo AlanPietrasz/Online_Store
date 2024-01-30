@@ -146,3 +146,46 @@
     border-radius: 4px;
     color: #a94442;
 }
+
+
+/* purchased-products */
+
+.purchased-products {
+    margin-top: 20px;
+    padding: 15px;
+    border-top: 1px solid #eaeaea; /* subtler border color */
+    background-color: #f9f9f9; /* light background for the section */
+    border-radius: 8px; /* optional: rounded corners */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* optional: adds depth */
+}
+
+.purchased-products h2 {
+    margin-bottom: 15px;
+    color: #333; /* dark color for better readability */
+}
+
+.purchased-products ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.purchased-products li {
+    margin-bottom: 10px; /* increased space */
+    padding: 8px; /* padding inside each list item */
+    transition: background-color 0.3s; /* smooth transition for hover effect */
+}
+
+.purchased-products li:hover {
+    background-color: #efefef; /* hover effect */
+}
+
+.purchased-products li strong {
+    font-weight: bold; /* emphasis on product name */
+}
+
+.purchased-products li span {
+    font-style: italic;
+    color: #555; /* subtle color for quantity */
+    margin-left: 10px; /* space between product name and quantity */
+}

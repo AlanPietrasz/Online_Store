@@ -1,6 +1,6 @@
 // db.js
 var mssql = require('mssql');
-var { UserRepository, RoleRepository, ProductRepository } = require('./repositories');
+var { UserRepository, RoleRepository, ProductRepository, CartRepository } = require('./repositories');
 
 var config = 'server=localhost,1433;database=LoggedInUsersDB;user id=superadmin;password=superadmin;TrustServerCertificate=true';
 var conn;
@@ -47,6 +47,22 @@ module.exports.isUserInRole = async function isUserInRole(username, roleName) {
  * @returns {Promise<boolean>} True if the user exists, false otherwise.
  */
 module.exports.doesUserExist = async function doesUserExist(username) {
+    const userRepo = new UserRepository(conn);
+
+    const exists = await userRepo.retrieve(username);
+    return exists;
+}
+
+/**
+* Retrieves a user or users from the database. If a username is provided, 
+* retrieves the specific user; otherwise retrieves all users.
+* @param {string|null} [username=null] - The username of the user to retrieve. 
+* If null, retrieves all users.
+* @returns {Promise<Array|Object|null>} A Promise that resolves to an array 
+* of user objects if no username is provided, a single user object if a 
+* username is provided, or null if the user is not found.
+*/
+module.exports.retrieveUser = async function retrieveUser(username) {
     const userRepo = new UserRepository(conn);
 
     const exists = await userRepo.retrieve(username);
@@ -250,3 +266,92 @@ module.exports.getPaginatedProducts = async function getPaginatedProducts(orderB
         searchTerm
     };
 }
+
+async function updateProductQuantity(productId, amount, increase = false) {
+    const productRepo = new ProductRepository(conn);
+    const currentQuantity = await productRepo.getProductQuantity(productId);
+    if (currentQuantity !== null) {
+        if (increase) {
+            await productRepo.increaseProductQuantity(productId, amount);
+        } else {
+            await productRepo.decreaseProductQuantity(productId, amount);
+        }
+    }
+}
+
+module.exports.clearCart = async function clearCart(userId) {
+    const cartRepo = new CartRepository(conn);
+    await cartRepo.clearCart(userId);
+}
+
+module.exports.completePurchase = async function completePurchase(userId) {
+    const cartRepo = new CartRepository(conn);
+    await cartRepo.completePurchase(userId);
+}
+
+
+module.exports.addToCart = async function addToCart(userId, productId, quantity  =1) {
+    const productRepo = new ProductRepository(conn);
+    const availableQuantity = await productRepo.getProductQuantity(productId);
+    if (availableQuantity !== null && quantity > availableQuantity) {
+        throw new Error('Not enough stock available.');
+    }
+    const cartRepo = new CartRepository(conn);
+    await cartRepo.addToCart(userId, productId, quantity);
+    if (availableQuantity !== null) {
+        await productRepo.decreaseProductQuantity(productId, quantity);
+    }
+}
+
+module.exports.removeFromCart = async function removeFromCart(userId, productId) {
+    const cartRepo = new CartRepository(conn);
+    const cartItem = await cartRepo.getCartItem(userId, productId);
+    if (!cartItem) {
+        throw new Error('Cart item not found.');
+    }
+    await cartRepo.removeFromCart(userId, productId);
+    await updateProductQuantity(productId, cartItem.quantity, true);
+}
+
+/**
+ * Retrieves all items in a specific user's cart.
+ * 
+ * @param {number} userId - The ID of the user.
+ * @returns {Promise<Array>} A promise that resolves to an array of cart items.
+ * @throws {Error} Throws an error if the database operation fails.
+ */
+module.exports.getCartItems = async function getCartItems(userId) {
+    const cartRepo = new CartRepository(conn);
+    return await cartRepo.getCartItems(userId);
+}
+
+module.exports.checkout = async function checkout(userId, totalCost) {
+    const cartRepo = new CartRepository(conn);
+    const userRepo = new UserRepository(conn);
+    const productRepo = new ProductRepository(conn);
+    
+    const user = await userRepo.retrieveById(userId);
+    const cartItems = await cartRepo.getCartItems(userId);
+
+    if (user.balance >= totalCost) {
+        await userRepo.updateUserBalance(userId, -totalCost);
+        
+        for (const item of cartItems) {
+            await productRepo.addProductToUser(userId, item.ID_Product, new Date(), item.quantity);
+            await productRepo.decreaseProductQuantity(item.ID_Product, item.quantity);
+        }
+        
+        await cartRepo.clearCart(userId);
+
+        return { success: true };
+    } else {
+        return { success: false, message: 'Insufficient funds' };
+    }
+};
+
+module.exports.getPurchasedProductsByUser = async function getPurchasedProductsByUser(username) {
+    const productRepo = new ProductRepository(conn);
+    const userRepo = new UserRepository(conn);
+    const user = await userRepo.retrieve(username);
+    return await productRepo.getPurchasedProductsByUser(user.ID);
+};

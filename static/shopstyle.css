@@ -112,37 +112,54 @@ button:hover {
 }
 
 
-/* Style dla ceny */
 .price {
-    /* wspólne style dla ceny */
+
 }
 
 .price-free {
-    color: #28a745; /* Zielony kolor dla darmowych produktów */
+    color: #28a745;
     background-color: #d4edda;
 }
 
 .price-not-available {
-    color: #dc3545; /* Czerwony kolor dla produktów niedostępnych w sprzedaży */
+    color: #dc3545;
     background-color: #f8d7da;
 }
 
-/* Style dla ilości */
 .quantity {
-    /* wspólne style dla ilości */
+
 }
 
 .quantity-not-available {
-    color: #ffc107; /* Pomarańczowy kolor dla produktów niedostępnych */
+    color: #ffc107;
     background-color: #fff3cd;
 }
 
 .quantity-unlimited {
-    color: #17a2b8; /* Niebieski kolor dla produktów o nieograniczonej ilości */
+    color: #17a2b8;
     background-color: #d1ecf1;
 }
 
 .quantity-normal {
-    color: #343a40; /* Standardowy kolor dla normalnej ilości */
+    color: #343a40;
     background-color: #e2e3e5;
+}
+
+
+
+.remove-from-cart {
+    background-color: #ff6666;
+    /* inne style */
+}
+
+.alert {
+    padding: 10px;
+    background-color: #f44336;
+    color: white;
+    margin-bottom: 15px;
+    border-radius: 5px;
+}
+
+.alert-danger {
+    border: 1px solid darkred;
 }

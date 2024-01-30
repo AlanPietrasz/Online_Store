@@ -39,6 +39,29 @@ class UserRepository {
     }
 
     /**
+     * Retrieves a user by their ID from the database.
+     * @param {number} id - The ID of the user to retrieve.
+     * @returns {Promise<Object|null>} A Promise that resolves to the user object if found, or null if not found.
+     * @throws {Error} Throws an error if the database operation fails.
+     */
+    async retrieveById(id) {
+        if (id === null || id === undefined) {
+            throw new Error('User ID must be provided.');
+        }
+
+        try {
+            const req = new mssql.Request(this.conn);
+            const query = 'SELECT * FROM LoggedInUsers WHERE ID = @id';
+            req.input('id', mssql.Int, id);
+            const res = await req.query(query);
+            return res.recordset.length > 0 ? res.recordset[0] : null;
+        } catch (err) {
+            console.error('Error in retrieveById:', err);
+            throw err;
+        }
+    }
+
+    /**
     * Inserts a new user into the database.
     * @param {Object} newUser - An object containing the new user's information, 
     * including username, email, and password.
@@ -292,6 +315,33 @@ class UserRepository {
             return res.recordset;
         } catch (err) {
             console.error('Error retrieving top users by balance:', err);
+            throw err;
+        }
+    }
+
+    /**
+     * Updates the balance of a user's account.
+     * @param {number} userId - The ID of the user.
+     * @param {number} amount - The amount to add or subtract from the user's balance.
+     * @returns {Promise<void>}
+     * @throws {Error} Throws an error if the database operation fails.
+     */
+    async updateUserBalance(userId, amount) {
+        if (userId === null || userId === undefined) {
+            throw new Error('User ID must be provided.');
+        }
+        if (amount === null || amount === undefined) {
+            throw new Error('Amount to update must be provided.');
+        }
+
+        try {
+            const req = new mssql.Request(this.conn);
+            req.input('ID', mssql.Int, userId)
+            .input('amount', mssql.Money, amount);
+
+            await req.query('UPDATE LoggedInUsers SET balance = balance + @amount WHERE ID = @ID');
+        } catch (err) {
+            console.error('Error in updateUserBalance:', err);
             throw err;
         }
     }
@@ -565,6 +615,274 @@ class ProductRepository {
             throw err;
         }
     }
+
+    /**
+    * Retrieves the available quantity of a specific product.
+    * @param {number} productId - The ID of the product.
+    * @returns {Promise<number>} A Promise that resolves to the available quantity of the product.
+    * @throws {Error} Throws an error if the database operation fails.
+    */
+    async getProductQuantity(productId) {
+        try {
+            const req = new mssql.Request(this.conn);
+            req.input('ID', mssql.Int, productId);
+            const result = await req.query('SELECT quantity FROM Product WHERE ID = @ID');
+            if (result.recordset.length > 0) {
+                return result.recordset[0].quantity !== null ? result.recordset[0].quantity : null;
+            }
+            return 0;
+        } catch (err) {
+            console.error('Error in getProductQuantity:', err);
+            throw err;
+        }
+    }
+
+    /**
+    * Decreases the quantity of a product.
+    * @param {number} productId - The ID of the product.
+    * @param {number} decreaseBy - The amount to decrease the quantity by.
+    * @returns {Promise<number>} A Promise that resolves to the number of rows affected.
+    */
+    async decreaseProductQuantity(productId, decreaseBy) {
+        try {
+            const req = new mssql.Request(this.conn);
+            req.input("ID", productId)
+                .input("decreaseBy", decreaseBy);
+
+            const res = await req.query('UPDATE Product SET quantity = quantity - @decreaseBy WHERE ID = @ID AND quantity >= @decreaseBy');
+            return res.rowsAffected[0];
+        } catch (err) {
+            console.error('Error in decreaseProductQuantity:', err);
+            throw err;
+        }
+    }
+
+    /**
+    * Increases the quantity of a product.
+    * @param {number} productId - The ID of the product.
+    * @param {number} increaseBy - The amount to increase the quantity by.
+    * @returns {Promise<number>} A Promise that resolves to the number of rows affected.
+    */
+    async increaseProductQuantity(productId, increaseBy) {
+        try {
+            const req = new mssql.Request(this.conn);
+            req.input("ID", productId)
+                .input("increaseBy", increaseBy);
+
+            const res = await req.query('UPDATE Product SET quantity = quantity + @increaseBy WHERE ID = @ID');
+            return res.rowsAffected[0];
+        } catch (err) {
+            console.error('Error in increaseProductQuantity:', err);
+            throw err;
+        }
+    }
+
+    async addProductToUser(userId, productId, purchaseDateTime, quantity) {
+        try {
+            const req = new mssql.Request(this.conn);
+            await req.input('ID_LoggedInUser', mssql.Int, userId)
+                .input('ID_Product', mssql.Int, productId)
+                .input('purchaseDateTime', mssql.DateTime2, purchaseDateTime)
+                .input('quantity', mssql.Int, quantity);
+    
+            const query = 'INSERT INTO LoggedInUser_Product (ID_LoggedInUser, ID_Product, purchaseDateTime, quantity) VALUES (@ID_LoggedInUser, @ID_Product, @purchaseDateTime, @quantity)';
+            await req.query(query);
+        } catch (err) {
+            console.error('Error in addProductToUser:', err);
+            throw err;
+        }
+    }
+
+    async getPurchasedProductsByUser(userId) {
+        try {
+            const req = new mssql.Request(this.conn);
+            req.input('ID_LoggedInUser', mssql.Int, userId);
+            const query = `
+                SELECT 
+                    P.ID, 
+                    P.productName, 
+                    P.description, 
+                    P.price, 
+                    LUP.quantity, 
+                    LUP.purchaseDateTime
+                FROM LoggedInUser_Product LUP
+                INNER JOIN Product P ON LUP.ID_Product = P.ID
+                WHERE LUP.ID_LoggedInUser = @ID_LoggedInUser
+            `;
+            const result = await req.query(query);
+            return result.recordset;
+        } catch (err) {
+            console.error('Error in getPurchasedProductsByUser:', err);
+            throw err;
+        }
+    }
 }
 
-module.exports = { UserRepository, RoleRepository, ProductRepository }
+class CartRepository {
+    /**
+     * CartRepository constructor.
+     * @param {mssql.ConnectionPool} conn - The connection pool to the database.
+     */
+    constructor(conn) {
+        this.conn = conn;
+    }
+
+    /**
+     * Adds a product with a specific quantity to a user's cart or updates the quantity if the product is already in the cart.
+     * @param {number} userId - The ID of the user.
+     * @param {number} productId - The ID of the product to add.
+     * @param {number} quantity - The quantity of the product to add.
+     * @throws {Error} Throws an error if the database operation fails.
+     */
+    async addToCart(userId, productId, quantity) {
+        try {
+            // Check if the product already exists in the user's cart
+            const existingItem = await this.getCartItem(userId, productId);
+            const req = new mssql.Request(this.conn);
+
+            if (existingItem) {
+                // Update the quantity if the item exists
+                const newQuantity = Number(existingItem.quantity) + Number(quantity);
+                await req.input('ID_LoggedInUser', userId)
+                    .input('ID_Product', productId)
+                    .input('quantity', newQuantity)
+                    .query('UPDATE CartItems SET quantity = @quantity WHERE ID_LoggedInUser = @ID_LoggedInUser AND ID_Product = @ID_Product');
+            } else {
+                // Insert the new item if it does not exist
+                await req.input('ID_LoggedInUser', userId)
+                    .input('ID_Product', productId)
+                    .input('quantity', quantity)
+                    .query('INSERT INTO CartItems (ID_LoggedInUser, ID_Product, quantity) VALUES (@ID_LoggedInUser, @ID_Product, @quantity)');
+            }
+        } catch (err) {
+            console.error('Error in addToCart:', err);
+            throw err;
+        }
+    }
+
+    /**
+     * Removes a specific product from a user's cart.
+     * @param {number} userId - The ID of the user.
+     * @param {number} productId - The ID of the product to remove.
+     * @throws {Error} Throws an error if the database operation fails.
+     */
+    async removeFromCart(userId, productId) {
+        try {
+            const req = new mssql.Request(this.conn);
+            req.input("ID_LoggedInUser", userId)
+                .input("ID_Product", productId);
+
+            const cartItem = await this.getCartItem(userId, productId);
+            if (!cartItem) throw new Error('Cart item not found.');
+
+            await req.query('DELETE FROM CartItems WHERE ID_LoggedInUser = @ID_LoggedInUser AND ID_Product = @ID_Product');
+        } catch (err) {
+            console.error('Error in removeFromCart:', err);
+            throw err;
+        }
+    }
+
+    /**
+     * Retrieves a single cart item for a user.
+     * @param {number} userId - The ID of the user.
+     * @param {number} productId - The ID of the product.
+     * @returns {Promise<Object|null>} A promise that resolves to the cart item if found, null otherwise.
+     * @throws {Error} Throws an error if the database operation fails.
+     */
+    async getCartItem(userId, productId) {
+        try {
+            const req = new mssql.Request(this.conn);
+            await req.input('ID_LoggedInUser', userId)
+                .input('ID_Product', productId);
+            const result = await req.query('SELECT * FROM CartItems WHERE ID_LoggedInUser = @ID_LoggedInUser AND ID_Product = @ID_Product');
+            return result.recordset.length > 0 ? result.recordset[0] : null;
+        } catch (err) {
+            console.error('Error in getCartItem:', err);
+            throw err;
+        }
+    }
+
+    /**
+     * Retrieves all items in a specific user's cart.
+     * @param {number} userId - The ID of the user.
+     * @returns {Promise<Array>} A promise that resolves to an array of cart items.
+     * @throws {Error} Throws an error if the database operation fails.
+     */
+    async getCartItems(userId) {
+        try {
+            const req = new mssql.Request(this.conn);
+            req.input("ID_LoggedInUser", userId);
+
+            //     const query = `SELECT 
+            //     CartItems.ID, 
+            //     CartItems.ID_LoggedInUser, 
+            //     CartItems.ID_Product, 
+            //     CartItems.quantity as CartQuantity, 
+            //     Product.productName, 
+            //     Product.description, 
+            //     Product.price, 
+            //     Product.quantity as ProductQuantity
+            // FROM CartItems 
+            // INNER JOIN Product ON CartItems.ID_Product = Product.ID 
+            // WHERE ID_LoggedInUser = @ID_LoggedInUser`
+            const query = `
+            SELECT 
+                c.ID AS CartItemID, 
+                c.ID_LoggedInUser, 
+                c.ID_Product, 
+                c.quantity AS CartQuantity, 
+                p.productName, 
+                p.price, 
+                p.quantity AS ProductQuantity
+            FROM CartItems c
+            INNER JOIN Product p ON c.ID_Product = p.ID
+            WHERE c.ID_LoggedInUser = @ID_LoggedInUser
+        `;
+
+            const result = await req.query(query);
+            return result.recordset.map(item => ({
+                ...item,
+                ID: item.CartItemID,
+                quantity: item.CartQuantity
+            }));
+        } catch (err) {
+            console.error('Error in getCartItems:', err);
+            throw err;
+        }
+    }
+
+    /**
+     * Clears all items from a user's cart.
+     * @param {number} userId - The ID of the user.
+     * @throws {Error} Throws an error if the database operation fails.
+     */
+    async clearCart(userId) {
+        try {
+            const req = new mssql.Request(this.conn);
+            await req.input("ID_LoggedInUser", userId);
+            await req.query('DELETE FROM CartItems WHERE ID_LoggedInUser = @ID_LoggedInUser');
+        } catch (err) {
+            console.error('Error in clearCart:', err);
+            throw err;
+        }
+    }
+
+    /**
+     * Completes a purchase for all items in a user's cart.
+     * @param {number} userId - The ID of the user.
+     * @throws {Error} Throws an error if the database operation fails.
+     */
+    async completePurchase(userId) {
+        try {
+            // Tu powinna być logika do obsługi zakupu, np. tworzenie zamówienia, aktualizacja stanu magazynowego itp.
+            // Na razie tylko czyścimy koszyk
+            await this.clearCart(userId);
+        } catch (err) {
+            console.error('Error in completePurchase:', err);
+            throw err;
+        }
+    }
+
+}
+
+module.exports = { UserRepository, RoleRepository, ProductRepository, CartRepository }

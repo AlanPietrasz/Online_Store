@@ -29,6 +29,25 @@
 
     <!-- TODO -->
 
+    <div class="purchased-products">
+        <h2>Your Purchased Products</h2>
+        <% if (purchasedProducts.length > 0) { %>
+            <ul>
+                <% purchasedProducts.forEach(product => { %>
+                    <li>
+                        <strong><%= product.productName %></strong>
+                        <% if (product.quantity) { %>
+                            <span>- Quantity: <%= product.quantity %></span>
+                        <% } %>
+                    </li>
+                <% }); %>
+            </ul>
+        <% } else { %>
+            <p>You have not purchased any products yet.</p>
+        <% } %>
+    </div>
+    
+
     <div class="account-actions">
         <div class="edit-account">
             <form action="/edit-account" method="GET">
