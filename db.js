@@ -48,9 +48,7 @@ module.exports.isUserInRole = async function isUserInRole(username, roleName) {
  */
 module.exports.doesUserExist = async function doesUserExist(username) {
     const userRepo = new UserRepository(conn);
-
-    const exists = await userRepo.retrieve(username);
-    return exists;
+    return await userRepo.doesUserExist(username);
 }
 
 /**
@@ -110,11 +108,11 @@ module.exports.deleteUserAndRoles = async function deleteUserAndRoles(username) 
  */
 module.exports.getUserRoles = async function getUserRoles(username) {
     const userRepo = new UserRepository(conn);
-    const user = await userRepo.retrieve(username);
 
-    if (!user) {
-        throw new Error('User not found');
-    }
+    const exist = await userRepo.doesUserExist(username);
+    if (!exist) return [];
+
+    const user = await userRepo.retrieve(username);
 
     const roles = await userRepo.getUserRoles(user.ID);
     return roles;
@@ -355,3 +353,18 @@ module.exports.getPurchasedProductsByUser = async function getPurchasedProductsB
     const user = await userRepo.retrieve(username);
     return await productRepo.getPurchasedProductsByUser(user.ID);
 };
+
+module.exports.retrieveProductDetails = async function retrieveProductDetails(productId) {
+    const productRepo = new ProductRepository(conn);
+    return await productRepo.retrieve(productId);
+}
+
+module.exports.updateProductDetails = async function updateProductDetails(productData) {
+    const productRepo = new ProductRepository(conn);
+    return await productRepo.update(productData);
+}
+
+module.exports.deleteProduct = async function deleteProduct(productId) {
+    const productRepo = new ProductRepository(conn);
+    return await productRepo.delete(productId);
+}

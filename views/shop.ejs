@@ -26,70 +26,84 @@
 
     <form action="/shop" method="get">
         <input type="text" name="searchTerm" placeholder="Search products..." value="<%= searchTerm || '' %>" />
-        <button type="submit">Search</button>
-    </form>
-
-    <form action="/shop" method="get">
         <select name="orderBy">
-            <option value="productName">Product Name</option>
-            <option value="price">Price</option>
+            <option value="productName" <%= orderBy === 'productName' ? 'selected' : '' %>>Product Name</option>
+            <option value="price" <%= orderBy === 'price' ? 'selected' : '' %>>Price</option>
         </select>
         <select name="direction">
-            <option value="asc">Ascending</option>
-            <option value="desc">Descending</option>
+            <option value="ASC" <%= direction === 'ASC' ? 'selected' : '' %>>Ascending</option>
+            <option value="DESC" <%= direction === 'DESC' ? 'selected' : '' %>>Descending</option>
         </select>
         <select name="pageSize">
-            <option value="10">10 per page</option>
-            <option value="20">20 per page</option>
-            <option value="30">30 per page</option>
-            <option value="40">40 per page</option>
-            <option value="50">50 per page</option>
+            <option value="2" <%= pageSize === 2 ? 'selected' : '' %>>2 per page</option>
+            <option value="5" <%= pageSize === 5 ? 'selected' : '' %>>5 per page</option>
+            <option value="10" <%= pageSize === 10 ? 'selected' : '' %>>10 per page</option>
+            <option value="20" <%= pageSize === 20 ? 'selected' : '' %>>20 per page</option>
+            <option value="30" <%= pageSize === 30 ? 'selected' : '' %>>30 per page</option>
+            <option value="40" <%= pageSize === 40 ? 'selected' : '' %>>40 per page</option>
+            <option value="50" <%= pageSize === 50 ? 'selected' : '' %>>50 per page</option>
         </select>
-        <button type="submit">Sort and View Products</button>
+        <button type="submit">Search and Sort Products</button>
     </form>
     
     <div class="products">
         <% products.forEach(function(product) { %>
-            <div class="product">
-                <h2><%= product.productName %></h2>
-                <p><%= product.description %></p>
-                <div class="info-container">
-                <% if (product.price === 0) { %>
-                    <p class="price price-free">Price: Free</p>
-                <% } else if (product.price === null) { %>
-                    <p class="price price-not-available">Price: Not yet available for purchase</p>
-                <% } else { %>
-                    <p class="price">Price: $<%= product.price.toFixed(2) %></p>
-                <% } %>
+            <% if (userRoles.includes('admin') || (product.quantity !== 0 && product.price !== null)) { %>
+                <div class="product">
+                    <h2><%= product.productName %></h2>
+                    <p><%= product.description %></p>
+                    <div class="info-container">
+                    <% if (product.price === 0) { %>
+                        <p class="price price-free">Price: Free</p>
+                    <% } else if (product.price === null) { %>
+                        <p class="price price-not-available">Price: Not yet available for purchase</p>
+                    <% } else { %>
+                        <p class="price">Price: $<%= product.price.toFixed(2) %></p>
+                    <% } %>
 
-                <% if (product.quantity === 0) { %>
-                    <p class="quantity quantity-not-available">Not available</p>
-                <% } else if (product.quantity === null) { %>
-                    <p class="quantity quantity-unlimited">Unlimited quantity</p>
-                <% } else { %>
-                    <p class="quantity">Quantity: <%= product.quantity %></p>
-                <% } %>
+                    <% if (product.quantity === 0) { %>
+                        <p class="quantity quantity-not-available">Not available</p>
+                    <% } else if (product.quantity === null) { %>
+                        <p class="quantity quantity-unlimited">Unlimited quantity</p>
+                    <% } else { %>
+                        <p class="quantity">Quantity: <%= product.quantity %></p>
+                    <% } %>
 
-                <% if (userRoles.includes('user')) { %>
-                    <form action="/addToCart" method="post">
-                        <input type="hidden" name="productId" value="<%= product.ID %>">
-                        <input type="number" name="quantity" value="1" min="1">
-                        <button type="submit">Add to Cart</button>
-                    </form>
-                <% } %>
+                    <% if (userRoles.includes('user') && product.quantity !== 0) { %>
+                        <form action="/addToCart" method="post">
+                            <input type="hidden" name="productId" value="<%= product.ID %>">
+                            <input type="number" name="quantity" value="1" min="1">
+                            <button type="submit">Add to Cart</button>
+                        </form>
+                    <% } %>
+                    </div>
+                    <% if (userRoles.includes('admin')) { %>
+                        <form action="/editProduct" method="get">
+                            <input type="hidden" name="productId" value="<%= product.ID %>">
+                            <button type="submit">Edit</button>
+                        </form>
+                        
+                        <form action="/deleteProduct" method="post">
+                            <input type="hidden" name="productId" value="<%= product.ID %>">
+                            <input type="hidden" name="searchTerm" value="<%= searchTerm %>">
+                            <input type="hidden" name="orderBy" value="<%= orderBy %>">
+                            <input type="hidden" name="direction" value="<%= direction %>">
+                            <input type="hidden" name="pageSize" value="<%= pageSize %>">
+                            <input type="hidden" name="page" value="<%= page %>">                        
+                            <button type="submit">Delete</button>
+                        </form>
+                    <% } %>
                 </div>
-            </div>
+            <% } %>
         <% }); %>
     </div>
 
-    <!-- Pagination -->
     <div class="pagination">
         <% for(let i = 1; i <= totalPages; i++) { %>
             <a href="/shop?page=<%= i %>&orderBy=<%= orderBy %>&direction=<%= direction %>&pageSize=<%= pageSize %>"
             class="<%= page == i ? 'active' : '' %>"><%= i %></a>
         <% } %>
     </div>
-    <!-- TODO -->
 
 </body>
 

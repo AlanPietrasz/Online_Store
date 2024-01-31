@@ -1,0 +1,46 @@
+<!-- edit-product.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Edit Product</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="editproductstyle.css" />
+</head>
+
+<body>
+    <div class="header">
+        <h1>Edit Product</h1>
+    </div>
+
+    <%- include('navigationbar', locals.user ) %>
+
+    <% if (product) { %>
+        <form action="/editProduct" method="post">
+            <input type="hidden" name="productId" value="<%= product.ID %>">
+            
+            <label for="productName">Product Name:</label>
+            <input type="text" id="productName" name="productName" value="<%= product.productName %>" required>
+
+            <label for="description">Description:</label>
+            <textarea id="description" name="description" required><%= product.description %></textarea>
+
+            <label for="price">Price:</label>
+            <input type="text" id="price" name="price" value="<%= product.price %>" required>
+
+            <label for="quantity">Quantity:</label>
+            <input type="number" id="quantity" name="quantity" value="<%= product.quantity %>" required>
+
+            <button type="submit">Update Product</button>
+        </form>
+    <% } else { %>
+        <p>Product not found.</p>
+    <% } %>
+
+    <a href="/shop">Cancel and return to product list</a>
+</body>
+
+</html>

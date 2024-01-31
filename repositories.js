@@ -38,6 +38,13 @@ class UserRepository {
         }
     }
 
+    async doesUserExist(username) {
+        if (username === undefined) return false;
+    
+        const exists = await this.retrieve(username);
+        return exists ? true : false;
+    }
+
     /**
      * Retrieves a user by their ID from the database.
      * @param {number} id - The ID of the user to retrieve.
@@ -534,25 +541,46 @@ class ProductRepository {
         }
     }
 
-    /**
-    * Deletes a product from the database.
-    * @param {number} productID - The ID of the product to delete.
-    * @returns {Promise<number>} A Promise that resolves to the number of rows affected.
-    * @throws {Error} If product ID is not provided.
-    */
+    // Function to check if the product has associated records in any table
+    async hasAssociatedRecords(productID) {
+        // Check for associated records in LoggedInUser_Product
+        let req = new mssql.Request(this.conn);
+        await req.input("ID_Product", productID);
+        const loggedInUserProductCount = await req.query('SELECT COUNT(*) AS count FROM LoggedInUser_Product WHERE ID_Product = @ID_Product');
+        
+        // Check for associated records in CartItems
+        req = new mssql.Request(this.conn);
+        await req.input("ID_Product", productID);
+        const cartItemsCount = await req.query('SELECT COUNT(*) AS count FROM CartItems WHERE ID_Product = @ID_Product');
+
+        return loggedInUserProductCount.recordset[0].count > 0 || cartItemsCount.recordset[0].count > 0;
+    }
+
+    // Function to delete product if it has no associations
     async delete(productID) {
-        if (!productID) {
-            throw new Error('Product ID must be provided.');
+        if (await this.hasAssociatedRecords(productID)) {
+            throw new Error('Cannot delete product because it has associated records.');
         }
-        try {
-            const req = new mssql.Request(this.conn);
-            req.input("ID", productID);
-            const res = await req.query('DELETE FROM Product WHERE ID = @ID');
-            return res.rowsAffected[0];
-        } catch (err) {
-            console.error('Error in Product delete:', err);
-            throw err;
-        }
+        return this.deleteProductById(productID);
+    }
+
+    async forceDeleteProduct(productID) {
+        // Delete references from LoggedInUser_Product
+        let req = new mssql.Request(this.conn);
+        await req.input("ID_Product", productID).query('DELETE FROM LoggedInUser_Product WHERE ID_Product = @ID_Product');
+
+        // Delete references from CartItems
+        req = new mssql.Request(this.conn);
+        await req.input("ID_Product", productID).query('DELETE FROM CartItems WHERE ID_Product = @ID_Product');
+
+        // Now, delete the product itself
+        return this.deleteProductById(productID);
+    }
+
+    async deleteProductById(productID) {
+        const req = new mssql.Request(this.conn);
+        await req.input("ID", productID).query('DELETE FROM Product WHERE ID = @ID');
+        return true; // or return req.rowsAffected[0]; for the number of rows affected
     }
 
     /**

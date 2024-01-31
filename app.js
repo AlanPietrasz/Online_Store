@@ -1,12 +1,15 @@
 // app.js
 const http = require('http');
-const authorize = require('./authorize')
-const db = require('./db');
-const trywrap = require('./trywrap');
 const express = require('express');
 const cookieParser = require('cookie-parser');
 
+const authorize = require('./authorize')
+const db = require('./db');
+const trywrap = require('./trywrap');
+
 const app = express();
+
+
 
 app.set('view engine', 'ejs');
 app.set('views', './views');
@@ -16,6 +19,7 @@ app.set('etag', false);
 
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser('sgs90890s8g90as8rg90as8g9r8a0srg8'));
+
 
 app.get("/", authorize(), async (req, res) => {
     res.render("index", { user: req.user });
@@ -214,7 +218,7 @@ app.get('/shop', authorize(), async (req, res) => {
     }
 
     const orderBy = req.query.orderBy || 'productName';
-    const direction = req.query.direction === 'desc' ? 'DESC' : 'ASC';
+    const direction = req.query.direction === 'DESC' ? 'DESC' : 'ASC';
     const pageSize = parseInt(req.query.pageSize, 10) || 10;
     const page = parseInt(req.query.page, 10) || 1;
     const searchTerm = req.query.searchTerm || '';
@@ -237,6 +241,60 @@ app.get('/shop', authorize(), async (req, res) => {
         error: req.query.error || null
     });
 
+});
+
+// TODO
+app.get('/editProduct', authorize('admin'), async (req, res) => {
+    function editProductError(err) {
+        console.log(err);
+        res.render('error', { message: 'Error editing products.' });
+    }
+
+    const productId = req.query.productId;
+    try {
+        const product = await db.retrieveProductDetails(productId);
+        if (product) {
+            res.render('edit-product', { product: product });
+        } else {
+            res.status(404).send('Product not found.');
+        }
+    } catch (error) {
+        res.status(500).send(error.message);
+    }
+});
+
+// TODO
+app.post('/editProduct', authorize('admin'), async (req, res) => {
+    const productData = {
+        ID: req.body.productId,
+        productName: req.body.productName,
+        description: req.body.description,
+        price: req.body.price,
+        quantity: req.body.quantity
+    };
+
+    try {
+        const updateResult = await db.updateProductDetails(productData);
+        if (updateResult > 0) {
+            res.redirect('/shop');
+        } else {
+            res.status(404).send('No product was updated, please check the provided ID.');
+        }
+    } catch (error) {
+        res.status(500).send(error.message);
+    }
+});
+
+app.post('/deleteProduct', authorize('admin'), async (req, res) => {
+    const productId = parseFloat(req.body.productId);
+    const { searchTerm, orderBy, direction, pageSize, page } = req.body;
+
+    const [_, error] = await trywrap(db.deleteProduct(productId));
+    if (error) {
+        return res.redirect(`/shop?searchTerm=${encodeURIComponent(searchTerm)}&orderBy=${orderBy}&direction=${direction}&pageSize=${pageSize}&page=${page}&error=${encodeURIComponent('Error deleting product.')}`);
+    }
+
+    res.redirect(`/shop?searchTerm=${encodeURIComponent(searchTerm)}&orderBy=${orderBy}&direction=${direction}&pageSize=${pageSize}&page=${page}`);
 });
 
 app.post('/addToCart', authorize('user'), async (req, res) => {
