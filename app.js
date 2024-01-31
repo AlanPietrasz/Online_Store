@@ -9,7 +9,7 @@ const trywrap = require('./trywrap');
 
 const app = express();
 
-
+app.use(express.json());
 
 app.set('view engine', 'ejs');
 app.set('views', './views');
@@ -286,15 +286,24 @@ app.post('/editProduct', authorize('admin'), async (req, res) => {
 });
 
 app.post('/deleteProduct', authorize('admin'), async (req, res) => {
-    const productId = parseFloat(req.body.productId);
-    const { searchTerm, orderBy, direction, pageSize, page } = req.body;
+    // const productId = parseFloat(req.body.productId);
+    // const { searchTerm, orderBy, direction, pageSize, page } = req.body;
 
+    // const [_, error] = await trywrap(db.deleteProduct(productId));
+    // if (error) {
+    //     return res.redirect(`/shop?searchTerm=${encodeURIComponent(searchTerm)}&orderBy=${orderBy}&direction=${direction}&pageSize=${pageSize}&page=${page}&error=${encodeURIComponent('Error deleting product.')}`);
+    // }
+
+    // res.redirect(`/shop?searchTerm=${encodeURIComponent(searchTerm)}&orderBy=${orderBy}&direction=${direction}&pageSize=${pageSize}&page=${page}`);
+
+    const productId = parseFloat(req.body.productId);
     const [_, error] = await trywrap(db.deleteProduct(productId));
     if (error) {
-        return res.redirect(`/shop?searchTerm=${encodeURIComponent(searchTerm)}&orderBy=${orderBy}&direction=${direction}&pageSize=${pageSize}&page=${page}&error=${encodeURIComponent('Error deleting product.')}`);
+        return res.status(500).send('Error deleting product.');
     }
 
-    res.redirect(`/shop?searchTerm=${encodeURIComponent(searchTerm)}&orderBy=${orderBy}&direction=${direction}&pageSize=${pageSize}&page=${page}`);
+    res.status(200).send('Product deleted successfully');
+
 });
 
 app.post('/addToCart', authorize('user'), async (req, res) => {
