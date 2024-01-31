@@ -163,3 +163,8 @@ button:hover {
 .alert-danger {
     border: 1px solid darkred;
 }
+
+.in-cart {
+    background-color: #ccc;
+    /* Other styles to indicate the item is in the cart */
+  }

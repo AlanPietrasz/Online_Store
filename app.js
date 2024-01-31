@@ -286,16 +286,6 @@ app.post('/editProduct', authorize('admin'), async (req, res) => {
 });
 
 app.post('/deleteProduct', authorize('admin'), async (req, res) => {
-    // const productId = parseFloat(req.body.productId);
-    // const { searchTerm, orderBy, direction, pageSize, page } = req.body;
-
-    // const [_, error] = await trywrap(db.deleteProduct(productId));
-    // if (error) {
-    //     return res.redirect(`/shop?searchTerm=${encodeURIComponent(searchTerm)}&orderBy=${orderBy}&direction=${direction}&pageSize=${pageSize}&page=${page}&error=${encodeURIComponent('Error deleting product.')}`);
-    // }
-
-    // res.redirect(`/shop?searchTerm=${encodeURIComponent(searchTerm)}&orderBy=${orderBy}&direction=${direction}&pageSize=${pageSize}&page=${page}`);
-
     const productId = parseFloat(req.body.productId);
     const [_, error] = await trywrap(db.deleteProduct(productId));
     if (error) {
@@ -306,33 +296,47 @@ app.post('/deleteProduct', authorize('admin'), async (req, res) => {
 
 });
 
+// app.post('/addToCart', authorize('user'), async (req, res) => {
+//     const user = await db.retrieveUser(req.user);
+//     const { productId, quantity } = req.body;
+//     try {
+//         await db.addToCart(user.ID, productId, quantity);
+//         res.redirect('/shop');
+//     } catch (error) {
+//         res.redirect('/shop?error=' + encodeURIComponent('Failed to add to cart: ' + error.message));
+//     }
+// });
+
+
+// app.post('/removeFromCart', authorize('user'), async (req, res) => {
+//     const user = await db.retrieveUser(req.user);
+//     const { productId } = req.body;
+//     await db.removeFromCart(user.ID, productId);
+//     res.redirect('/cart');
+// });
+
 app.post('/addToCart', authorize('user'), async (req, res) => {
     const user = await db.retrieveUser(req.user);
     const { productId, quantity } = req.body;
     try {
+        // This function should handle adding the specified quantity of the product to the cart
         await db.addToCart(user.ID, productId, quantity);
-        res.redirect('/shop');
+        res.json({ message: 'Product added to cart', productId: productId });
     } catch (error) {
-        res.redirect('/shop?error=' + encodeURIComponent('Failed to add to cart: ' + error.message));
+        res.status(500).json({ message: 'Failed to add product to cart', error: error.message });
     }
 });
 
 app.post('/removeFromCart', authorize('user'), async (req, res) => {
     const user = await db.retrieveUser(req.user);
     const { productId } = req.body;
-    await db.removeFromCart(user.ID, productId);
-    res.redirect('/cart');
-});
-
-app.get('/cart', authorize('user'), async (req, res) => {
-    const user = await db.retrieveUser(req.user);
-    const cartItems = await db.getCartItems(user.ID);
-
-    res.render('cart', {
-        user: req.user,
-        userRoles: (await db.getUserRoles(req.user)).map(x => x.roleName),
-        cartItems,
-    });
+    try {
+        // This function should handle removing the product from the cart
+        await db.removeFromCart(user.ID, productId);
+        res.json({ message: 'Product removed from cart', productId: productId });
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to remove product from cart', error: error.message });
+    }
 });
 
 app.get('/checkout', authorize('user'), async (req, res) => {
