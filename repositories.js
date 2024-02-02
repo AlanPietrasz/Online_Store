@@ -352,6 +352,48 @@ class UserRepository {
             throw err;
         }
     }
+
+    async getPaginatedUsers(page = 1, pageSize = 10, searchTerm = '') {
+        try {
+            const offset = (page - 1) * pageSize;
+            let query = `SELECT * FROM LoggedInUsers WHERE username LIKE @searchTerm ORDER BY username OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY`;
+            const totalQuery = `SELECT COUNT(*) as totalCount FROM LoggedInUsers WHERE username LIKE @searchTerm`;
+    
+            const req = new mssql.Request(this.conn);
+            req.input('searchTerm', `%${searchTerm}%`);
+            req.input('offset', mssql.Int, offset);
+            req.input('pageSize', mssql.Int, pageSize);
+    
+            const [users, total] = await Promise.all([
+                req.query(query),
+                req.query(totalQuery)
+            ]);
+
+            const usersWithRolesPromises = users.recordset.map(async (user) => {
+                const roles = await this.getUserRoles(user.ID); // Zakładając, że this.getUserRoles jest dostępne
+                return {
+                    ...user,
+                    roles: roles.map(role => role.roleName) // Przykład mapowania, jeśli chcesz tylko nazwy ról
+                };
+            });
+
+            const usersWithRoles = await Promise.all(usersWithRolesPromises);
+
+    
+            return {
+                users: usersWithRoles,
+                totalCount: total.recordset[0].totalCount,
+                page,
+                pageSize,
+                totalPages: Math.ceil(total.recordset[0].totalCount / pageSize),
+                searchTerm
+            };
+        } catch (err) {
+            console.error('Error in getPaginatedUsers:', err);
+            throw err;
+        }
+    }
+    
 }
 
 class RoleRepository {

@@ -189,3 +189,18 @@
     color: #555; /* subtle color for quantity */
     margin-left: 10px; /* space between product name and quantity */
 }
+
+.user-list-link {
+    display: inline-block;
+    background-color: #4CAF50; /* Zielony kolor tła */
+    color: white; /* Biały tekst */
+    padding: 10px 20px; /* Padding wokół tekstu */
+    margin-top: 20px; /* Margines na górze dla odstępu */
+    border-radius: 5px; /* Zaokrąglone rogi */
+    text-decoration: none; /* Usuwa podkreślenie */
+    transition: background-color 0.3s; /* Animacja zmiany koloru */
+}
+
+.user-list-link:hover {
+    background-color: #45a049; /* Ciemniejszy zielony kolor przy najechaniu */
+}

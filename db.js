@@ -387,3 +387,41 @@ module.exports.addNewProduct = async function addNewProduct(productData) {
         throw error;
     }
 }
+
+/**
+ * Retrieves paginated users from the database.
+ * 
+ * @param {number} page - The current page number.
+ * @param {number} pageSize - The number of users per page.
+ * @param {string} searchTerm - The search term to filter users.
+ * @returns {Promise<Object>} An object containing paginated users and pagination details.
+ */
+module.exports.getPaginatedUsers = async function(page = 1, pageSize = 10, searchTerm = '') {
+    const userRepository = new UserRepository(conn);
+    return await userRepository.getPaginatedUsers(page, pageSize, searchTerm);
+};
+
+
+/**
+ * Removes a role from a user based on usernames and role names.
+ * 
+ * @param {string} username - The username of the user.
+ * @param {string} roleName - The name of the role to remove.
+ * @returns {Promise<void>}
+ */
+module.exports.removeRoleFromUser = async function removeRoleFromUser(username, roleName) {
+    const userRepo = new UserRepository(conn);
+    const roleRepo = new RoleRepository(conn);
+
+    const user = await userRepo.retrieve(username);
+    if (!user) {
+        throw new Error(`User ${username} not found.`);
+    }
+    
+    const role = await roleRepo.retrieve(roleName);
+    if (!role) {
+        throw new Error(`Role ${roleName} not found.`);
+    }
+
+    return await userRepo.removeRoleFromUser(user.ID, role.ID);
+};

@@ -116,6 +116,7 @@ app.post('/signup', async (req, res) => {
     }
 });
 
+// TODO
 app.get('/account', authorize('user', 'admin'), async (req, res) => {
     var [userData, userError] = await trywrap(db.retrieveUserDetails(req.user));
     if (userError) {
@@ -140,7 +141,9 @@ app.get('/account', authorize('user', 'admin'), async (req, res) => {
 
     const combinedProductsArray = Object.values(combinedProducts);
 
-    res.render('account', { user: req.user, userData: userData, purchasedProducts: combinedProductsArray });
+    const userRoles = (await db.getUserRoles(req.user)).map(x => x.roleName);
+
+    res.render('account', { user: req.user, userData: userData, purchasedProducts: combinedProductsArray, userRoles });
 });
 
 app.get('/edit-account', authorize('user', 'admin'), async (req, res) => {
@@ -370,6 +373,51 @@ app.post('/finalize-purchase', authorize('user'), async (req, res) => {
 app.get('/purchase-successful', authorize('user'), async (req, res) => {
     res.render('purchase-successful');
 })
+
+app.get('/userlist', authorize('admin'), async (req, res) => {
+    const page = parseInt(req.query.page, 10) || 1;
+    const pageSize = parseInt(req.query.pageSize, 10) || 10;
+    const searchTerm = req.query.searchTerm || '';
+
+    try {
+        const paginationData = await db.getPaginatedUsers(page, pageSize, searchTerm);
+
+        
+
+        res.render('user-list', {
+            users: paginationData.users,
+            page: paginationData.page,
+            totalPages: paginationData.totalPages,
+            pageSize: paginationData.pageSize,
+            searchTerm: paginationData.searchTerm
+        });
+    } catch (error) {
+        console.error('Error fetching paginated users:', error);
+        res.render('error', { message: 'Error retrieving users.' });
+    }
+});
+
+// Dodawanie roli admina użytkownikowi
+app.post('/addAdminRole', authorize('admin'), async (req, res) => {
+    const { username } = req.body;
+    try {
+        await db.addRoleToUser(username, 'admin');
+        res.json({ success: true, message: 'Admin role added successfully.' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Usuwanie roli admina od użytkownika
+app.post('/removeAdminRole', authorize('admin'), async (req, res) => {
+    const { username } = req.body;
+    try {
+        await db.removeRoleFromUser(username, 'admin');
+        res.json({ success: true, message: 'Admin role removed successfully.' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
 
 app.get('/moneymaker', authorize('user'), async (req, res) => {
     res.render('moneymaker', {user: req.user});

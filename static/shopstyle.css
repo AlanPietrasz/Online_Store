@@ -1,17 +1,5 @@
 /* shopstyle */
-body {
-    font-family: 'Arial', sans-serif;
-    background-color: #f4f4f4;
-    margin: 0;
-    padding: 0;
-}
 
-.header {
-    background-color: #333;
-    color: #fff;
-    padding: 10px 20px;
-    text-align: center;
-}
 
 form {
     margin: 20px auto;
@@ -213,3 +201,20 @@ button:hover {
 .no-resize {
     resize: none;
   }
+
+
+  .button-container {
+    display: flex; /* Ustawia przyciski obok siebie */
+    justify-content: center; /* Opcjonalnie, centruje przyciski w kontenerze */
+    gap: 10px; /* Dodaje odstępy pomiędzy przyciskami */
+}
+
+.delete-button {
+    background-color: #dc3545; /* Czerwony kolor tła dla przycisku Delete */
+    color: white; /* Biały tekst, aby był czytelny na czerwonym tle */
+    border: none; /* Usuwa domyślną ramkę */
+}
+
+.delete-button:hover {
+    background-color: #bd2130; /* Nieco ciemniejszy czerwony kolor przy najechaniu */
+}

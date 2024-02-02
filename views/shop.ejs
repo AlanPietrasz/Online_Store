@@ -298,17 +298,10 @@ function showAddProductForm() {
                             <input type="hidden" name="productId" value="<%= product.ID %>">
                             <button type="submit">Edit</button>
                         </form> -->
-                        <button type="button" onclick="editProduct(<%= product.ID %>)">Edit</button>
-                        
-                        <form action="/deleteProduct" method="post">
-                            <input type="hidden" name="productId" value="<%= product.ID %>">
-                            <input type="hidden" name="searchTerm" value="<%= searchTerm %>">
-                            <input type="hidden" name="orderBy" value="<%= orderBy %>">
-                            <input type="hidden" name="direction" value="<%= direction %>">
-                            <input type="hidden" name="pageSize" value="<%= pageSize %>">
-                            <input type="hidden" name="page" value="<%= page %>">                        
-                            <button type="button" onclick="deleteProduct(<%= product.ID %>)">Delete</button>
-                        </form>
+                        <div class="button-container">
+                          <button type="button" onclick="editProduct(<%= product.ID %>)">Edit</button>
+                          <button type="button" onclick="deleteProduct(<%= product.ID %>)" class="delete-button">Delete</button>
+                      </div>
                     <% } %>
                 </div>
             <% } %>

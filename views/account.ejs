@@ -27,6 +27,10 @@
         <p><strong>Multiplier:</strong> <%= userData.multiplier %></p>
     </div>
 
+    <% if (locals.userRoles && locals.userRoles.includes('admin')) { %>
+        <a href="/userlist" class="user-list-link">User List</a>
+    <% } %>
+
     <!-- TODO -->
 
     <div class="purchased-products">
