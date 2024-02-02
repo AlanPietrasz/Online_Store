@@ -6,7 +6,7 @@ test('test', async ({ page }) => {
   await page.locator('input[name="txtUser"]').click();
   await page.locator('input[name="txtUser"]').fill('_testUser6');
   await page.locator('input[name="txtPwd"]').click();
-  await page.locator('input[name="txtPwd"]').fill('123456');
+  await page.locator('input[name="txtPwd"]').fill('123456'); // or 1234567
   await page.getByRole('button', { name: 'Log In' }).click();
   await page.getByRole('button', { name: 'Account' }).click();
   await page.getByRole('link', { name: 'My Account' }).click();
@@ -50,7 +50,7 @@ test('test', async ({ page }) => {
   await page.locator('input[name="txtPwd"]').click();
   await page.locator('input[name="txtPwd"]').fill('1234567');
   await page.getByRole('button', { name: 'Log In' }).click();
-  await page.locator('div').filter({ hasText: /^_testUser6$/ }).click();
+  // await page.locator('div').filter({ hasText: /^_testUser6$/ }).click();
   await expect(page.locator('body')).toContainText('_testUser6');
   await page.goto('http://localhost:3000/');
   await page.getByRole('button', { name: 'Account', exact: true }).click();

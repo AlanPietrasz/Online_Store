@@ -5,10 +5,20 @@
     padding: 20px;
     border: 1px solid #ccc;
     border-radius: 5px;
+    text-align: center;
 }
 
 .summary {
     margin-bottom: 20px;
+    font-size: 16px;
+}
+
+.amount, .balance {
+    display: block;
+    margin: 10px 0;
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
 }
 
 .warning {
@@ -18,7 +28,8 @@
 
 .action-buttons {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
+    margin-top: 20px;
 }
 
 .confirm-btn, .back-btn {
@@ -26,6 +37,8 @@
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    font-size: 16px;
+    margin: 0 10px;
 }
 
 .confirm-btn {
@@ -36,4 +49,9 @@
 .back-btn {
     background-color: #f44336;
     color: white;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f9f9f9;
 }

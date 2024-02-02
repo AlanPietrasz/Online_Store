@@ -27,6 +27,7 @@ module.exports.initConnectionPool = async function initConnectionPool() {
  * @returns {Promise<boolean>} True if the user is associated with the role, false otherwise.
  */
 module.exports.isUserInRole = async function isUserInRole(username, roleName) {
+    if (!username) return false;
     const userRepo = new UserRepository(conn);
     const roleRepo = new RoleRepository(conn);
 
@@ -246,10 +247,10 @@ module.exports.updateUserDetails = async function updateUserDetails(username, us
     return await userRepo.update({ ...user, ...userData });
 }
 
-module.exports.getPaginatedProducts = async function getPaginatedProducts(orderBy, direction, page, pageSize, searchTerm = '') {
+module.exports.getPaginatedProducts = async function getPaginatedProducts(orderBy, direction, page, pageSize, searchTerm = '', adminView = false) {
     const productRepo = new ProductRepository(conn);
-    const totalProductsPromise = searchTerm ? productRepo.search(searchTerm).then(results => results.length) : productRepo.getTotalProductCount();
-    const productsPromise = productRepo.getProducts(orderBy, direction === 'ASC', page, pageSize, searchTerm);
+    const totalProductsPromise = searchTerm ? productRepo.search(searchTerm, adminView).then(results => results.length) : productRepo.getTotalProductCount(adminView);
+    const productsPromise = productRepo.getProducts(orderBy, direction === 'ASC', page, pageSize, searchTerm, adminView);
 
     const [totalProducts, products] = await Promise.all([totalProductsPromise, productsPromise]);
     const totalPages = Math.ceil(totalProducts / pageSize);

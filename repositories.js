@@ -590,10 +590,13 @@ class ProductRepository {
     * @returns {Promise<Array>} A Promise that resolves to an 
     * array of product objects that match the search term.
     */
-    async search(searchTerm) {
+    async search(searchTerm, adminView = false) {
         try {
             const req = new mssql.Request(this.conn);
-            const query = 'SELECT * FROM Product WHERE productName LIKE @searchTerm OR description LIKE @searchTerm';
+            var query = 'SELECT * FROM Product WHERE (productName LIKE @searchTerm OR description LIKE @searchTerm)';
+            if (!adminView) {
+                query += ' AND (price IS NOT NULL AND (quantity != 0 OR quantity IS NULL))';
+            }
             req.input('searchTerm', mssql.NVarChar, `%${searchTerm}%`);
             const res = await req.query(query);
             return res.recordset;
@@ -611,15 +614,20 @@ class ProductRepository {
     * @param {number} pageSize - The number of products per page.
     * @returns {Promise<Array>} A Promise that resolves to an array of product objects.
     */
-    async getProducts(orderBy = 'productName', ascending = true, page = 1, pageSize = 10, searchTerm = '') {
+    async getProducts(orderBy = 'productName', ascending = true, page = 1, pageSize = 10, searchTerm = '', adminView = false) {
         try {
             const req = new mssql.Request(this.conn);
             const offset = (page - 1) * pageSize;
             const orderDirection = ascending ? 'ASC' : 'DESC';
-            const query = `
+            var query = `
                     SELECT * FROM Product
-                    WHERE productName LIKE @searchTerm OR description LIKE @searchTerm
-                    ORDER BY ${orderBy} ${orderDirection}
+                    WHERE (productName LIKE @searchTerm OR description LIKE @searchTerm)
+                    `
+            if (!adminView) {
+                query += ' AND (price IS NOT NULL AND (quantity != 0 OR quantity IS NULL))';
+            }
+
+            query+=`ORDER BY ${orderBy} ${orderDirection}
                     OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY
                 `;
             req.input('searchTerm', mssql.NVarChar, `%${searchTerm}%`);
@@ -633,10 +641,14 @@ class ProductRepository {
         }
     }
 
-    async getTotalProductCount() {
+    async getTotalProductCount(adminView = false) {
         try {
             const req = new mssql.Request(this.conn);
-            const res = await req.query('SELECT COUNT(*) AS count FROM Product');
+            var query = 'SELECT COUNT(*) AS count FROM Product';
+            if (!adminView) {
+                query += ' WHERE price IS NOT NULL AND (quantity != 0 OR quantity IS NULL)';
+            }
+            const res = await req.query(query);
             return res.recordset[0].count;
         } catch (err) {
             console.error('Error in getTotalProductCount:', err);

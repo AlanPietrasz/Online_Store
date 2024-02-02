@@ -223,7 +223,8 @@ app.get('/shop', authorize(), async (req, res) => {
     const page = parseInt(req.query.page, 10) || 1;
     const searchTerm = req.query.searchTerm || '';
 
-    const [paginationData, err] = await trywrap(db.getPaginatedProducts(orderBy, direction, page, pageSize, searchTerm));
+    const isAdmin = req.user && await db.isUserInRole(req.user, 'admin');
+    const [paginationData, err] = await trywrap(db.getPaginatedProducts(orderBy, direction, page, pageSize, searchTerm, isAdmin));
     if (err) shopError(err);
 
     const userRoles = (await db.getUserRoles(req.user)).map(x => x.roleName);
@@ -243,47 +244,47 @@ app.get('/shop', authorize(), async (req, res) => {
 
 });
 
-// TODO
-app.get('/editProduct', authorize('admin'), async (req, res) => {
-    function editProductError(err) {
-        console.log(err);
-        res.render('error', { message: 'Error editing products.' });
-    }
+// // TODO
+// app.get('/editProduct', authorize('admin'), async (req, res) => {
+//     function editProductError(err) {
+//         console.log(err);
+//         res.render('error', { message: 'Error editing products.' });
+//     }
 
-    const productId = req.query.productId;
-    try {
-        const product = await db.retrieveProductDetails(productId);
-        if (product) {
-            res.render('edit-product', { product: product });
-        } else {
-            res.status(404).send('Product not found.');
-        }
-    } catch (error) {
-        res.status(500).send(error.message);
-    }
-});
+//     const productId = req.query.productId;
+//     try {
+//         const product = await db.retrieveProductDetails(productId);
+//         if (product) {
+//             res.render('edit-product', { product: product });
+//         } else {
+//             res.status(404).send('Product not found.');
+//         }
+//     } catch (error) {
+//         res.status(500).send(error.message);
+//     }
+// });
 
-// TODO
-app.post('/editProduct', authorize('admin'), async (req, res) => {
-    const productData = {
-        ID: req.body.productId,
-        productName: req.body.productName,
-        description: req.body.description,
-        price: req.body.price,
-        quantity: req.body.quantity
-    };
+// // TODO
+// app.post('/editProduct', authorize('admin'), async (req, res) => {
+//     const productData = {
+//         ID: req.body.productId,
+//         productName: req.body.productName,
+//         description: req.body.description,
+//         price: req.body.price,
+//         quantity: req.body.quantity
+//     };
 
-    try {
-        const updateResult = await db.updateProductDetails(productData);
-        if (updateResult > 0) {
-            res.redirect('/shop');
-        } else {
-            res.status(404).send('No product was updated, please check the provided ID.');
-        }
-    } catch (error) {
-        res.status(500).send(error.message);
-    }
-});
+//     try {
+//         const updateResult = await db.updateProductDetails(productData);
+//         if (updateResult > 0) {
+//             res.redirect('/shop');
+//         } else {
+//             res.status(404).send('No product was updated, please check the provided ID.');
+//         }
+//     } catch (error) {
+//         res.status(500).send(error.message);
+//     }
+// });
 
 app.post('/deleteProduct', authorize('admin'), async (req, res) => {
     const productId = parseFloat(req.body.productId);
@@ -296,30 +297,29 @@ app.post('/deleteProduct', authorize('admin'), async (req, res) => {
 
 });
 
-// app.post('/addToCart', authorize('user'), async (req, res) => {
-//     const user = await db.retrieveUser(req.user);
-//     const { productId, quantity } = req.body;
-//     try {
-//         await db.addToCart(user.ID, productId, quantity);
-//         res.redirect('/shop');
-//     } catch (error) {
-//         res.redirect('/shop?error=' + encodeURIComponent('Failed to add to cart: ' + error.message));
-//     }
-// });
-
-
-// app.post('/removeFromCart', authorize('user'), async (req, res) => {
-//     const user = await db.retrieveUser(req.user);
-//     const { productId } = req.body;
-//     await db.removeFromCart(user.ID, productId);
-//     res.redirect('/cart');
-// });
-
 app.post('/addToCart', authorize('user'), async (req, res) => {
     const user = await db.retrieveUser(req.user);
     const { productId, quantity } = req.body;
     try {
-        // This function should handle adding the specified quantity of the product to the cart
+        await db.addToCart(user.ID, productId, quantity);
+        res.redirect('/shop');
+    } catch (error) {
+        res.redirect('/shop?error=' + encodeURIComponent('Failed to add to cart: ' + error.message));
+    }
+});
+
+
+app.post('/removeFromCart', authorize('user'), async (req, res) => {
+    const user = await db.retrieveUser(req.user);
+    const { productId } = req.body;
+    await db.removeFromCart(user.ID, productId);
+    res.redirect('/cart');
+});
+
+app.post('/shopAddToCart', authorize('user'), async (req, res) => {
+    const user = await db.retrieveUser(req.user);
+    const { productId, quantity } = req.body;
+    try {
         await db.addToCart(user.ID, productId, quantity);
         res.json({ message: 'Product added to cart', productId: productId });
     } catch (error) {
@@ -327,17 +327,23 @@ app.post('/addToCart', authorize('user'), async (req, res) => {
     }
 });
 
-app.post('/removeFromCart', authorize('user'), async (req, res) => {
+app.post('/shopRemoveFromCart', authorize('user'), async (req, res) => {
     const user = await db.retrieveUser(req.user);
     const { productId } = req.body;
     try {
-        // This function should handle removing the product from the cart
         await db.removeFromCart(user.ID, productId);
         res.json({ message: 'Product removed from cart', productId: productId });
     } catch (error) {
         res.status(500).json({ message: 'Failed to remove product from cart', error: error.message });
     }
 });
+
+app.get('/cart', authorize('user'), async (req, res) => {
+    const user = await db.retrieveUser(req.user);
+    const cartItems = await db.getCartItems(user.ID);
+    const userRoles = await db.getUserRoles(req.user);
+    res.render('cart', { user: req.user, userRoles, cartItems })
+})
 
 app.get('/checkout', authorize('user'), async (req, res) => {
     const user = await db.retrieveUser(req.user);

@@ -34,25 +34,21 @@
         }
         </script>
 <script>
-    // ... other script code ...
-  
     function toggleCartItem(productId, button) {
       const quantityInput = document.getElementById('quantity_' + productId);
       const quantity = parseInt(quantityInput.value, 10);
-      // If the quantity is not a number or less than 1, we don't proceed
       if (isNaN(quantity) || quantity < 1) {
         alert('Please enter a valid quantity.');
         return;
       }
   
-      const action = button.classList.contains('in-cart') ? 'removeFromCart' : 'addToCart';
+      const action = button.classList.contains('in-cart') ? 'shopRemoveFromCart' : 'shopAddToCart';
       const requestBody = { productId: productId, quantity: quantity };
   
       fetch(`/${action}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          // If you're using CSRF protection, make sure to add your token here
         },
         body: JSON.stringify(requestBody)
       })
@@ -60,11 +56,10 @@
         if (!response.ok) {
           throw new Error('Network response was not ok');
         }
-        return response.json(); // You can send back some JSON data from the server if needed
+        return response.json();
       })
       .then(data => {
-        // Toggle the button appearance and state
-        if (action === 'removeFromCart') {
+        if (action === 'shopRemoveFromCart') {
           button.classList.remove('in-cart');
           button.textContent = 'Add to Cart';
         } else {
@@ -141,7 +136,7 @@
                     <% } %>
 
                     <% if (userRoles.includes('user') && product.quantity !== 0) { %>
-                        <form action="/addToCart" method="post">
+                        <form action="/shopAddToCart" method="post">
                             <input type="hidden" name="productId" value="<%= product.ID %>">
                             <!-- <input type="number" name="quantity" value="1" min="1"> -->
                             <input type="number" id="quantity_<%= product.ID %>" name="quantity" value="1" min="1" class="quantity-input">

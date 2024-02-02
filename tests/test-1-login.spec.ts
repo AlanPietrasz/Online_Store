@@ -15,6 +15,10 @@ test('test', async ({ page }) => {
   await page.locator('input[name="txtUser"]').fill('_testUser1');
   await page.locator('input[name="txtPwd"]').click();
   await page.locator('input[name="txtPwd"]').fill('123456');
-  await page.getByRole('button', { name: 'Log In' }).click();
-  await page.locator('div').filter({ hasText: /^_testUser1$/ }).click();
+  await page.locator('input[name="txtPwd"]').press('Enter');
+  await page.getByText('_testUser1').nth(1).click({
+    button: 'right'
+  });
+  await page.getByText('_testUser1').nth(1).click();
+  await expect(page.locator('body')).toContainText('_testUser1');
 });
