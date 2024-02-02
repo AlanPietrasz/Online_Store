@@ -32,8 +32,7 @@
             console.error('There has been a problem with your fetch operation:', error);
           });
         }
-        </script>
-<script>
+
     function toggleCartItem(productId, button) {
       const quantityInput = document.getElementById('quantity_' + productId);
       const quantity = parseInt(quantityInput.value, 10);
@@ -71,8 +70,136 @@
         console.error('There has been a problem with your fetch operation:', error);
       });
     }
-  </script>
-  
+
+function editProduct(productId) {
+  fetch(`/getProductDetails?productId=${productId}`)
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    return response.json();
+  })
+  .then(productData => {
+
+    const editFormHtml = `
+      <div id="editFormContainer_${productId}" class="edit-form">
+        <form id="editForm_${productId}">
+          <label for="productName_${productId}">Product Name</label>
+          <input type="text" id="productName_${productId}" name="productName" value="${productData.productName}" />
+
+          <label for="description_${productId}">Description</label>
+          <textarea id="description_${productId}" name="description" class="no-resize" rows="5">${productData.description}</textarea>
+
+          <label for="price_${productId}">Price</label>
+          <input type="text" id="price_${productId}" name="price" value="${productData.price !== null ? productData.price : ''}" placeholder="Enter price or leave blank for null" />
+
+          <label for="quantity_${productId}">Quantity</label>
+          <input type="text" id="quantity_${productId}" name="quantity" value="${productData.quantity !== null ? productData.quantity : ''}" placeholder="Enter quantity or leave blank for unlimited" />
+
+          <button type="button" onclick="submitEdit(${productId})">Submit Changes</button>
+          <button type="button" onclick="cancelEdit(${productId})" class="cancel-button">Cancel</button>
+        </form>
+      </div>
+    `;
+
+document.getElementById('product_' + productId).innerHTML += editFormHtml;
+  })
+  .catch(error => {
+    console.error('There has been a problem with your fetch operation:', error);
+  });
+}
+
+function cancelEdit(productId) {
+  const editFormContainer = document.getElementById('editFormContainer_' + productId);
+  if (editFormContainer) {
+    editFormContainer.remove();
+  }
+}
+
+    
+function submitEdit(productId) {
+  const editForm = document.getElementById('editForm_' + productId);
+  const formData = new FormData(editForm);
+
+  const productData = {};
+  formData.forEach((value, key) => { productData[key] = value; });
+
+  fetch('/updateProduct', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ ...productData, productId })
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    return response.json();
+  })
+  .then(data => {
+    const productDiv = document.getElementById('product_' + productId);
+    if (productDiv) {
+      productDiv.querySelector('h2').innerText = productData.productName;
+      productDiv.querySelector('p').innerText = productData.description;
+      const priceElement = productDiv.querySelector('.price');
+      const quantityElement = productDiv.querySelector('.quantity');
+
+      if (productData.price === '') {
+        priceElement.innerText = 'Price: Not yet available for purchase';
+      } else {
+        priceElement.innerText = 'Price: $' + parseFloat(productData.price).toFixed(2);
+      }
+
+      if (productData.quantity === '') {
+        quantityElement.innerText = 'Unlimited quantity';
+      } else {
+        quantityElement.innerText = 'Quantity: ' + parseInt(productData.quantity);
+      }
+    }
+
+    const editFormContainer = document.getElementById('editFormContainer_' + productId);
+    if (editFormContainer) {
+      editFormContainer.remove();
+    }
+
+    alert('Product updated successfully');
+  })
+  .catch(error => {
+    console.error('There has been a problem with your fetch operation:', error);
+  });
+}
+
+function showAddProductForm() {
+    const productName = prompt("Enter product name:");
+    const description = prompt("Enter product description:");
+    const price = prompt("Enter product price:");
+    const quantity = prompt("Enter product quantity:");
+
+    if (productName) {
+        fetch('/addProduct', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ productName, description, price, quantity })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Product added successfully');
+                window.location.reload();
+            } else {
+                alert('Failed to add product');
+            }
+        })
+        .catch(error => {
+            console.error('There was an error adding the product:', error);
+        });
+    }
+}
+    </script>
+    
         
         
 </head>
@@ -111,6 +238,28 @@
         </select>
         <button type="submit">Search and Sort Products</button>
     </form>
+
+    <% if (userRoles.includes('admin')) { %>
+      <button type="button" id="addNewProduct" onclick="showAddProductForm()">Add New Product</button>
+      <div id="addProductModal" style="display: none;">
+        <form id="addProductForm">
+            <label for="productName">Product Name:</label>
+            <input type="text" id="productName" name="productName" required>
+    
+            <label for="description">Description:</label>
+            <textarea id="description" name="description" required></textarea>
+    
+            <label for="price">Price:</label>
+            <input type="number" id="price" name="price" required>
+    
+            <label for="quantity">Quantity:</label>
+            <input type="number" id="quantity" name="quantity" required>
+    
+            <button type="submit">Add Product</button>
+            <button type="button" onclick="hideAddProductForm()">Cancel</button>
+        </form>
+    </div>
+  <% } %>
     
     <div class="products">
         <% products.forEach(function(product) { %>
@@ -145,10 +294,11 @@
                     <% } %>
                     </div>
                     <% if (userRoles.includes('admin')) { %>
-                        <form action="/editProduct" method="get">
+                        <!-- <form action="/editProduct" method="get">
                             <input type="hidden" name="productId" value="<%= product.ID %>">
                             <button type="submit">Edit</button>
-                        </form>
+                        </form> -->
+                        <button type="button" onclick="editProduct(<%= product.ID %>)">Edit</button>
                         
                         <form action="/deleteProduct" method="post">
                             <input type="hidden" name="productId" value="<%= product.ID %>">

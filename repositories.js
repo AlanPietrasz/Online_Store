@@ -502,14 +502,21 @@ class ProductRepository {
             throw new Error('New product data must be provided.');
         }
         try {
+            const price = newProduct.price !== '' ? newProduct.price : null;
+            const quantity = newProduct.quantity !== '' ? newProduct.quantity : null;
+
             const req = new mssql.Request(this.conn);
             req.input("productName", newProduct.productName)
                 .input("description", newProduct.description)
-                .input("price", newProduct.price)
-                .input("quantity", newProduct.quantity);
+                .input("price", price)
+                .input("quantity", quantity);
 
-            const query = 'INSERT INTO Product (productName, description, price, quantity) VALUES (@productName, @description, @price, @quantity) SELECT SCOPE_IDENTITY() AS id';
-            const res = await req.query(query);
+            const query = `
+                INSERT INTO Product (productName, description, price, quantity)
+                VALUES (@productName, @description, @price, @quantity);
+                SELECT SCOPE_IDENTITY() AS id;
+            `;
+             const res = await req.query(query);
             return res.recordset[0].id;
         } catch (err) {
             console.error('Error in Product insert:', err);
@@ -526,12 +533,16 @@ class ProductRepository {
     async update(product) {
         if (!product || !product.ID) throw new Error('Product ID must be provided.');
         try {
+
+            const price = product.price !== '' ? product.price : null;
+            const quantity = product.quantity !== '' ? product.quantity : null;
+
             const req = new mssql.Request(this.conn);
             req.input("ID", product.ID)
                 .input("productName", product.productName)
                 .input("description", product.description)
-                .input("price", product.price)
-                .input("quantity", product.quantity);
+                .input("price", price)
+                .input("quantity", quantity);
 
             const res = await req.query('UPDATE Product SET productName=@productName, description=@description, price=@price, quantity=@quantity WHERE ID=@ID');
             return res.rowsAffected[0];
@@ -852,19 +863,6 @@ class CartRepository {
         try {
             const req = new mssql.Request(this.conn);
             req.input("ID_LoggedInUser", userId);
-
-            //     const query = `SELECT 
-            //     CartItems.ID, 
-            //     CartItems.ID_LoggedInUser, 
-            //     CartItems.ID_Product, 
-            //     CartItems.quantity as CartQuantity, 
-            //     Product.productName, 
-            //     Product.description, 
-            //     Product.price, 
-            //     Product.quantity as ProductQuantity
-            // FROM CartItems 
-            // INNER JOIN Product ON CartItems.ID_Product = Product.ID 
-            // WHERE ID_LoggedInUser = @ID_LoggedInUser`
             const query = `
             SELECT 
                 c.ID AS CartItemID, 

@@ -168,3 +168,48 @@ button:hover {
     background-color: #ccc;
     /* Other styles to indicate the item is in the cart */
   }
+
+
+/* edit-form */
+
+
+.edit-form {
+    background: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-top: 10px;
+}
+
+.edit-form input[type="text"],
+.edit-form textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.edit-form button {
+    margin: 10px 5px;
+}
+
+/* You may also want to style the cancel button differently */
+.edit-form .cancel-button {
+    background-color: #f44336;
+}
+
+.edit-form textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+    max-height: 300px; /* Set the maximum height to 300px, adjust as needed */
+}
+
+.no-resize {
+    resize: none;
+  }

@@ -244,47 +244,15 @@ app.get('/shop', authorize(), async (req, res) => {
 
 });
 
-// // TODO
-// app.get('/editProduct', authorize('admin'), async (req, res) => {
-//     function editProductError(err) {
-//         console.log(err);
-//         res.render('error', { message: 'Error editing products.' });
-//     }
-
-//     const productId = req.query.productId;
-//     try {
-//         const product = await db.retrieveProductDetails(productId);
-//         if (product) {
-//             res.render('edit-product', { product: product });
-//         } else {
-//             res.status(404).send('Product not found.');
-//         }
-//     } catch (error) {
-//         res.status(500).send(error.message);
-//     }
-// });
-
-// // TODO
-// app.post('/editProduct', authorize('admin'), async (req, res) => {
-//     const productData = {
-//         ID: req.body.productId,
-//         productName: req.body.productName,
-//         description: req.body.description,
-//         price: req.body.price,
-//         quantity: req.body.quantity
-//     };
-
-//     try {
-//         const updateResult = await db.updateProductDetails(productData);
-//         if (updateResult > 0) {
-//             res.redirect('/shop');
-//         } else {
-//             res.status(404).send('No product was updated, please check the provided ID.');
-//         }
-//     } catch (error) {
-//         res.status(500).send(error.message);
-//     }
-// });
+app.post('/addProduct', authorize('admin'), async (req, res) => {
+    try {
+        const productId = await db.addNewProduct(req.body);
+        res.json({ success: true, productId: productId });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
 
 app.post('/deleteProduct', authorize('admin'), async (req, res) => {
     const productId = parseFloat(req.body.productId);
@@ -297,6 +265,37 @@ app.post('/deleteProduct', authorize('admin'), async (req, res) => {
 
 });
 
+app.get('/getProductDetails', authorize('admin'), async (req, res) => {
+    const productId = req.query.productId;
+    try {
+        const productDetails = await db.retrieveProductDetails(productId); // You need to implement this method
+        res.json(productDetails);
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to retrieve product details', error: error.message });
+    }
+});
+
+app.post('/updateProduct', authorize('admin'), async (req, res) => {
+    const { productId, productName, description, price, quantity } = req.body;
+    try {
+        const updateResult = await db.updateProductDetails({
+            ID: productId,
+            productName: productName,
+            description: description,
+            price: price,
+            quantity: quantity
+        });
+
+        if (updateResult) {
+            res.json({ message: 'Product updated successfully' });
+        } else {
+            res.status(500).json({ message: 'Failed to update product' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to update product', error: error.message });
+    }
+});
+
 app.post('/addToCart', authorize('user'), async (req, res) => {
     const user = await db.retrieveUser(req.user);
     const { productId, quantity } = req.body;
@@ -307,7 +306,6 @@ app.post('/addToCart', authorize('user'), async (req, res) => {
         res.redirect('/shop?error=' + encodeURIComponent('Failed to add to cart: ' + error.message));
     }
 });
-
 
 app.post('/removeFromCart', authorize('user'), async (req, res) => {
     const user = await db.retrieveUser(req.user);

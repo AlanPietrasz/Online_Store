@@ -369,3 +369,21 @@ module.exports.deleteProduct = async function deleteProduct(productId) {
     const productRepo = new ProductRepository(conn);
     return await productRepo.delete(productId);
 }
+
+/**
+ * Adds a new product to the database.
+ * 
+ * @param {Object} productData - An object containing the new product's information.
+ * @returns {Promise<number>} The ID of the newly added product.
+ * @throws {Error} If the operation fails.
+ */
+module.exports.addNewProduct = async function addNewProduct(productData) {
+    const productRepo = new ProductRepository(conn);
+    try {
+        const productId = await productRepo.insert(productData);
+        return productId;
+    } catch (error) {
+        console.error('Error in addNewProduct:', error);
+        throw error;
+    }
+}
