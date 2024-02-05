@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="moneymakerstyle.css" />
     <title>Moneymaker</title>
 </head>
 <body>
@@ -15,7 +16,43 @@
 
     <%- include('navigationbar', locals.user ) %>
 
-    <!-- TODO -->
+    <div id="moneymaker-container">
+        <div class="info-container">
+            <p class="info">User Balance: <span id="user-balance">0</span>$</p>
+            <p class="info">Multiplier: <span id="user-multiplier">1</span>x</p>
+        </div>
+        <button id="money-button">Make money!</button>
+    </div>
+    
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const user = '<%= user %>';
+        let balance = <%= locals.balance %>;
+        let multiplier = <%= locals.multiplier %>;
+
+        const moneyButton = document.getElementById('money-button');
+        const userBalance = document.getElementById('user-balance');
+        const userMultiplier = document.getElementById('user-multiplier');
+
+        userBalance.textContent = balance;
+        userMultiplier.textContent = multiplier;
+    
+        moneyButton.addEventListener('click', () => {
+            socket.emit('addMoney', { username: user, amount: multiplier });
+        });
+    
+        socket.on('balanceUpdated', (data) => {
+            if (data.username === user) {
+                userBalance.textContent = data.balance.toFixed(2); //data.balance;
+                balance = data.balance;
+            }
+        });
+    
+        socket.on('error', (data) => {
+            alert(data.message);
+        });
+    </script>
     
 </body>
 </html>

@@ -64,8 +64,7 @@ module.exports.doesUserExist = async function doesUserExist(username) {
 module.exports.retrieveUser = async function retrieveUser(username) {
     const userRepo = new UserRepository(conn);
 
-    const exists = await userRepo.retrieve(username);
-    return exists;
+    return await userRepo.retrieve(username);
 }
 
 /**

@@ -2,6 +2,7 @@
 const http = require('http');
 const express = require('express');
 const cookieParser = require('cookie-parser');
+const socketIo = require('socket.io');
 
 const authorize = require('./authorize')
 const db = require('./db');
@@ -397,7 +398,6 @@ app.get('/userlist', authorize('admin'), async (req, res) => {
     }
 });
 
-// Dodawanie roli admina użytkownikowi
 app.post('/addAdminRole', authorize('admin'), async (req, res) => {
     const { username } = req.body;
     try {
@@ -408,7 +408,6 @@ app.post('/addAdminRole', authorize('admin'), async (req, res) => {
     }
 });
 
-// Usuwanie roli admina od użytkownika
 app.post('/removeAdminRole', authorize('admin'), async (req, res) => {
     const { username } = req.body;
     try {
@@ -420,7 +419,16 @@ app.post('/removeAdminRole', authorize('admin'), async (req, res) => {
 });
 
 app.get('/moneymaker', authorize('user'), async (req, res) => {
-    res.render('moneymaker', {user: req.user});
+    try {
+        const user = await db.retrieveUser(req.user);
+        if (!user) {
+            return res.status(404).send("User not found.");
+        }
+        res.render('moneymaker', { user: req.user, balance: user.balance, multiplier: user.multiplier }); // Załóżmy, że pole multiplier istnieje w obiekcie user
+    } catch (error) {
+        console.error('Error fetching user data:', error);
+        res.status(500).send("Error fetching user dataa.");
+    }
 });
 
 app.use((req, res, next) => {
@@ -431,13 +439,30 @@ app.use((err, req, res, next) => {
     res.end(`Error handling request: ${err}`);
 });
 
+const server = http.createServer(app);
+const io = socketIo(server);
+
+io.on('connection', (socket) => {
+    console.log('User connected', socket.id);
+
+    socket.on('addMoney', async ({ username, amount }) => {
+        try {
+            await db.updateUserBalance(username, amount);
+            const user = await db.retrieveUser(username);
+            io.emit('balanceUpdated', { username: username, balance: user.balance });
+        } catch (error) {
+            socket.emit('error', { message: 'Error updating account balance .' });
+        }
+    });
+});
+
+server.listen(3000, () => {
+  console.log("Server listening on http://localhost:3000/");
+});
+
 db.initConnectionPool()
   .then(() => {
     console.log('Database connected successfully.');
-
-    http.createServer(app).listen(3000, () => {
-      console.log("Server listening on http://localhost:3000/");
-    });
   })
   .catch(err => {
     console.error('Error while connecting to the database:', err);
