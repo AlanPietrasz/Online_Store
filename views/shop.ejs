@@ -280,12 +280,14 @@ function showAddProductForm() {
                         <p class="price">Price: $<%= product.price.toFixed(2) %></p>
                     <% } %>
 
-                    <% if (product.quantity === 0) { %>
-                        <p class="quantity quantity-not-available">Not available</p>
-                    <% } else if (product.quantity === null) { %>
-                        <p class="quantity quantity-unlimited">Unlimited quantity</p>
-                    <% } else { %>
-                        <p class="quantity">Quantity: <%= product.quantity %></p>
+                    <% if (userRoles.includes('admin')) { %>
+                      <% if (product.quantity === 0) { %>
+                          <p class="quantity quantity-not-available">Not available</p>
+                      <% } else if (product.quantity === null) { %>
+                          <p class="quantity quantity-unlimited">Unlimited quantity</p>
+                      <% } else { %>
+                          <p class="quantity">Quantity: <%= product.quantity %></p>
+                      <% } %>
                     <% } %>
 
                     <% if (userRoles.includes('user') && product.quantity !== 0) { %>

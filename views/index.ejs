@@ -7,17 +7,47 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="homepagestyle.css" />
     <title>Home Page</title>
 </head>
 
 <body>
     <div class="header">
-        <h1>Home Page</h1>
+        <h1>Welcome to My Web Application</h1>
     </div>
 
     <%- include('navigationbar', locals.user ) %>
 
-    <!-- TODO -->
+    <div class="main-content">
+        <section class="intro-section">
+            <h2>Make Money, Shop, and Climb the Leaderboard!</h2>
+            <p>Join our community and discover the easiest way to earn and spend within our ecosystem.</p>
+        </section>
+
+        <section class="features-section">
+            <div class="feature">
+                <h3>Moneymaker</h3>
+                <p>Click and earn virtual money to increase your balance!</p>
+                <a href="/moneymaker" class="feature-link">Start Earning</a>
+            </div>
+
+            <div class="feature">
+                <h3>Shop</h3>
+                <p>Browse our shop for exclusive items that can boost your earning potential.</p>
+                <a href="/shop" class="feature-link">Visit Shop</a>
+            </div>
+
+            <div class="feature">
+                <h3>Leaderboard</h3>
+                <p>See how you stack up against other users in real-time rankings.</p>
+                <a href="/leaderboard" class="feature-link">View Leaderboard</a>
+            </div>
+        </section>
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2024 Alan Pietrasz. All Rights Reserved.</p>
+    </footer>
 
 </body>
 

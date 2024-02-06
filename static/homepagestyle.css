@@ -1,0 +1,60 @@
+
+
+.header h1 {
+    margin: 0;
+    font-size: 2.5em;
+}
+
+.main-content {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.welcome-user h2 {
+    color: #4CAF50;
+}
+
+.quick-links h3,
+.user-status h3,
+.about h3 {
+    color: #007bff;
+}
+
+.quick-links ul,
+.user-status .status-items {
+    list-style-type: none;
+    padding: 0;
+}
+
+.quick-links li,
+.status-items p {
+    background-color: white;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.quick-links li a,
+.status-items p a {
+    text-decoration: none;
+    color: #007bff;
+    font-weight: bold;
+}
+
+.quick-links li a:hover,
+.status-items p a:hover {
+    text-decoration: underline;
+}
+
+.about {
+    background-color: white;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    margin-top: 20px;
+}
+
+.about p {
+    line-height: 1.6;
+}
