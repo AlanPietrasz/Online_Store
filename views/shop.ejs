@@ -310,7 +310,7 @@ function showAddProductForm() {
 
     <div class="pagination">
         <% for(let i = 1; i <= totalPages; i++) { %>
-            <a href="/shop?page=<%= i %>&orderBy=<%= orderBy %>&direction=<%= direction %>&pageSize=<%= pageSize %>"
+            <a href="/shop?page=<%= i %>&orderBy=<%= orderBy %>&direction=<%= direction %>&pageSize=<%= pageSize %>&searchTerm=<%= searchTerm %>"
             class="<%= page == i ? 'active' : '' %>"><%= i %></a>
         <% } %>
     </div>

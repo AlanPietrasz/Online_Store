@@ -28,11 +28,11 @@
         <% if (cartItems && cartItems.length > 0) { %>
             <% cartItems.forEach(function(item) { %>
                 <div class="cart-item">
-                    <p><strong><%= item.productName %></strong> - $<%= (item.price || 0).toFixed(2) %></p>
-                    <p>Quantity: <%= item.CartQuantity %></p>
-                    <form action="/removeFromCart" method="post">
+                    <p class="product-name"><strong><%= item.productName %></strong> - $<%= (item.price || 0).toFixed(2) %></p>
+                    <p class="quantity">Quantity: <%= item.CartQuantity %></p>
+                    <form action="/removeFromCart" method="post" class="cart-item-form">
                         <input type="hidden" name="productId" value="<%= item.ID_Product %>">
-                        <button type="submit">Remove</button>
+                        <button type="submit" class="remove-btn">Remove</button>
                     </form>
                 </div>
             <% }); %>
@@ -41,12 +41,16 @@
             </div>
             <div class="checkout-btn-container">
                 <form action="/checkout" method="get">
-                    <button type="submit">Checkout</button>
+                    <button type="submit" class="checkout-btn">Checkout</button>
                 </form>
             </div>
         <% } else { %>
             <p>Your cart is empty.</p>
         <% } %>
+
+        <div class="return-to-shop">
+            <a href="/shop" class="return-link">Return to Shop</a>
+        </div>
     </div>
 </body>
 </html>

@@ -4,6 +4,15 @@ const functionMap = {
     Factorial: function Factorial(n) {
       if (n < 2) return 1;
       return n * Factorial(n - 1);
+    },
+    Fib: function Fib(n) {
+      let a = 0, b = 1, f = 1;
+      for (let i = 2; i <= n; i++) {
+        f = a + b;
+        a = b;
+        b = f;
+      }
+      return f;
     }
   };
   
