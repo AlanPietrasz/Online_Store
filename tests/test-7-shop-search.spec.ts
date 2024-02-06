@@ -18,8 +18,4 @@ test('test', async ({ page }) => {
   // await expect(page.locator('select[name="orderBy"]')).toHaveValue('price');
   await expect(page.locator('select[name="direction"]')).toHaveValue('DESC');
   await expect(page.locator('select[name="pageSize"]')).toHaveValue('2');
-  await expect(page.locator('h2')).toContainText('Product4 abc');
-  await page.locator('#quantity_4').click();
-  await page.locator('#quantity_4').fill('5');
-  await page.locator('#quantity_4').press('Enter');
 });

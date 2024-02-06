@@ -309,42 +309,41 @@
 /* function-result-display */
 
 .function-result-display {
-    background-color: #eef6ee; /* Light green background for visibility */
-    border: 1px solid #d4e2d4; /* Subtle border color */
-    border-radius: 8px; /* Rounded corners for the result display box */
-    padding: 10px 20px; /* Padding around the content */
-    margin-bottom: 20px; /* Space before the list of products starts */
-    text-align: center; /* Center the text inside the div */
-    display: flex; /* Use flexbox for alignment */
-    justify-content: space-between; /* Space between the result and the download link */
-    align-items: center; /* Align items vertically */
-    max-width: 600px; /* Max width of the result display box */
-    margin-left: auto; /* Center the box horizontally */
+    background-color: #eef6ee;
+    border: 1px solid #d4e2d4;
+    border-radius: 8px;
+    padding: 10px 20px;
+    margin-bottom: 20px;
+    text-align: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 600px;
+    margin-left: auto;
     margin-right: auto;
 }
 
 .result-text {
-    font-size: 1.2em; /* Make the result text larger */
-    color: #2e8b57; /* Dark green color for the result text for readability */
-    font-weight: bold; /* Make the result text bold */
+    font-size: 1.2em;
+    color: #2e8b57;
+    font-weight: bold;
 }
 
 .download-link {
     padding: 5px 10px;
-    background-color: #dff0d8; /* Light green background for the download link */
-    border-radius: 5px; /* Rounded corners for the download link */
-    color: #3c763d; /* Dark green color for the link text */
-    text-decoration: none; /* No underline for the link */
-    margin-left: 15px; /* Space from the result text */
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Subtle shadow for depth */
-    transition: background-color 0.3s; /* Transition for the hover effect */
+    background-color: #dff0d8;
+    border-radius: 5px;
+    color: #3c763d;
+    text-decoration: none;
+    margin-left: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: background-color 0.3s;
 }
 
 .download-link:hover {
-    background-color: #c3e6cb; /* Slightly darker green on hover */
-    text-decoration: none; /* No underline on hover */
+    background-color: #c3e6cb;
+    text-decoration: none;
 }
-
 
 
 
