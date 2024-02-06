@@ -7,6 +7,7 @@ const socketIo = require('socket.io');
 const authorize = require('./authorize')
 const db = require('./db');
 const trywrap = require('./trywrap');
+const fn = require('./functions');
 
 const app = express();
 
@@ -117,7 +118,6 @@ app.post('/signup', async (req, res) => {
     }
 });
 
-// TODO
 app.get('/account', authorize('user', 'admin'), async (req, res) => {
     var [userData, userError] = await trywrap(db.retrieveUserDetails(req.user));
     if (userError) {
@@ -144,7 +144,54 @@ app.get('/account', authorize('user', 'admin'), async (req, res) => {
 
     const userRoles = (await db.getUserRoles(req.user)).map(x => x.roleName);
 
-    res.render('account', { user: req.user, userData: userData, purchasedProducts: combinedProductsArray, userRoles });
+    let functionResult = req.query.functionResult;
+    let usedProduct = req.query.usedProduct;
+    let argumentUsed = req.query.argument;
+
+    res.render('account', { 
+        user: req.user, 
+        userData: userData, 
+        purchasedProducts: combinedProductsArray, 
+        userRoles,
+        functionResult,
+        usedProduct,
+        argumentUsed
+     });
+});
+
+app.post('/use-product', authorize('user'), async (req, res) => {
+    const productName = req.body.productName;
+    const user = req.user;
+
+    const product = fn.parseProductName(productName)
+
+    let url = '/account';
+
+    if (product.type === 'multiplier') {
+        await db.increaseUserMultiplier(user, product.value);
+    } else if (product.type === 'function') {
+        const argument = req.body.argument;
+        const functionResult = product.value(argument);
+        url += `?functionResult=${functionResult}&usedProduct=${productName}&argument=${argument}`;
+    }
+    await db.decreaseUserProductQuantity(user, productName);
+
+    res.redirect(url);
+});
+
+app.get('/download-function-result', authorize('user'), async (req, res) => {
+    const { functionResult, productName, argument } = req.query;
+
+    if (!functionResult || !productName || !argument) {
+        return res.status(400).send('Function result or product name not provided.');
+    }
+
+    const filename = `${productName}-result-with-arg-${argument}.txt`;
+
+    res.header('Content-Disposition', `attachment; filename="${filename}"`);
+    res.type('txt');
+
+    res.send(`Result for product ${productName} with argument (${argument}): ${functionResult}`);
 });
 
 app.get('/edit-account', authorize('user', 'admin'), async (req, res) => {
@@ -281,6 +328,12 @@ app.get('/getProductDetails', authorize('admin'), async (req, res) => {
 
 app.post('/updateProduct', authorize('admin'), async (req, res) => {
     const { productId, productName, description, price, quantity } = req.body;
+    
+    const trimmedProductName = productName.trim();
+    if (!trimmedProductName) {
+        return res.status(400).json({ message: 'Product name cannot be empty' });
+    }
+    
     try {
         const updateResult = await db.updateProductDetails({
             ID: productId,
@@ -424,7 +477,8 @@ app.get('/moneymaker', authorize('user'), async (req, res) => {
         if (!user) {
             return res.status(404).send("User not found.");
         }
-        res.render('moneymaker', { user: req.user, balance: user.balance, multiplier: user.multiplier }); // Załóżmy, że pole multiplier istnieje w obiekcie user
+        const balance = user.balance.toFixed(2);
+        res.render('moneymaker', { user: req.user, balance, multiplier: user.multiplier }); // Załóżmy, że pole multiplier istnieje w obiekcie user
     } catch (error) {
         console.error('Error fetching user data:', error);
         res.status(500).send("Error fetching user dataa.");

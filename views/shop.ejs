@@ -172,6 +172,10 @@ function submitEdit(productId) {
 
 function showAddProductForm() {
     const productName = prompt("Enter product name:");
+    if (!productName.trim()) {
+        alert("Product name cannot be empty.");
+        return;
+    }
     const description = prompt("Enter product description:");
     const price = prompt("Enter product price:");
     const quantity = prompt("Enter product quantity:");
@@ -294,10 +298,6 @@ function showAddProductForm() {
                     <% } %>
                     </div>
                     <% if (userRoles.includes('admin')) { %>
-                        <!-- <form action="/editProduct" method="get">
-                            <input type="hidden" name="productId" value="<%= product.ID %>">
-                            <button type="submit">Edit</button>
-                        </form> -->
                         <div class="button-container">
                           <button type="button" onclick="editProduct(<%= product.ID %>)">Edit</button>
                           <button type="button" onclick="deleteProduct(<%= product.ID %>)" class="delete-button">Delete</button>

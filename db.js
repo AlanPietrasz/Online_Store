@@ -424,3 +424,51 @@ module.exports.removeRoleFromUser = async function removeRoleFromUser(username, 
 
     return await userRepo.removeRoleFromUser(user.ID, role.ID);
 };
+
+
+/**
+ * Increases the multiplier for a user.
+ *
+ * @param {string} username - The username of the user.
+ * @param {number} value - The value to add to the current multiplier.
+ * @returns {Promise<void>}
+ */
+module.exports.increaseUserMultiplier = async function increaseUserMultiplier(username, value) {
+    const userRepo = new UserRepository(conn);
+    const user = await userRepo.retrieve(username);
+    if (!user) throw new Error('User not found');
+    user.multiplier += value;
+    await userRepo.update(user);
+};
+
+// In db.js
+
+/**
+ * Decreases the quantity of a purchased product for a specific user by product name.
+ *
+ * @param {string} username - The username of the user.
+ * @param {string} productName - The name of the product.
+ * @param {number} decreaseBy - The amount to decrease the product's quantity by, defaulting to 1.
+ * @returns {Promise<void>}
+ */
+module.exports.decreaseUserProductQuantity = async function decreaseUserProductQuantity(username, productName, decreaseBy = 1) {
+    const userRepo = new UserRepository(conn);
+    const productRepo = new ProductRepository(conn);
+
+    const user = await userRepo.retrieve(username);
+    if (!user) {
+        throw new Error('User not found');
+    }
+
+    const product = await productRepo.retrieveByName(productName);
+    if (!product) {
+        throw new Error('Product not found');
+    }
+
+    const purchasedProduct = await productRepo.getPurchasedProductByUserAndProduct(user.ID, product.ID);
+    if (!purchasedProduct || purchasedProduct.quantity < decreaseBy) {
+        throw new Error('Not enough product quantity to decrease');
+    }
+    
+    await productRepo.decreasePurchasedProductQuantity(user.ID, product.ID, decreaseBy);
+}

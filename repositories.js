@@ -533,6 +533,24 @@ class ProductRepository {
     }
 
     /**
+     * Retrieves a product from the database by its name.
+     *
+     * @param {string} productName - The name of the product to retrieve.
+     * @returns {Promise<Object|null>} A promise that resolves to the product object or null if not found.
+     */
+    async retrieveByName(productName) {
+        try {
+            const req = new mssql.Request(this.conn);
+            req.input('productName', mssql.NVarChar, productName);
+            const res = await req.query('SELECT * FROM Product WHERE productName = @productName');
+            return res.recordset.length > 0 ? res.recordset[0] : null;
+        } catch (err) {
+            console.error('Error in retrieveByName:', err);
+            throw err;
+        }
+    }
+
+    /**
     * Inserts a new product into the database.
     * @param {Object} newProduct - An object containing the new product's information.
     * @returns {Promise<number>} A Promise that resolves to the ID of the newly 
@@ -770,18 +788,54 @@ class ProductRepository {
         }
     }
 
+    /**
+     * Adds a product to a user or updates the quantity if the user has already purchased the product.
+     *
+     * @param {number} userId - The ID of the user.
+     * @param {number} productId - The ID of the product.
+     * @param {Date} purchaseDateTime - The date and time of the purchase.
+     * @param {number} quantity - The quantity of the product to add.
+     * @returns {Promise<void>}
+     */
     async addProductToUser(userId, productId, purchaseDateTime, quantity) {
+        const transaction = new mssql.Transaction(this.conn);
+
         try {
-            const req = new mssql.Request(this.conn);
-            await req.input('ID_LoggedInUser', mssql.Int, userId)
+            await transaction.begin();
+
+            const req = new mssql.Request(transaction);
+            req.input('ID_LoggedInUser', mssql.Int, userId)
                 .input('ID_Product', mssql.Int, productId)
                 .input('purchaseDateTime', mssql.DateTime2, purchaseDateTime)
                 .input('quantity', mssql.Int, quantity);
-    
-            const query = 'INSERT INTO LoggedInUser_Product (ID_LoggedInUser, ID_Product, purchaseDateTime, quantity) VALUES (@ID_LoggedInUser, @ID_Product, @purchaseDateTime, @quantity)';
-            await req.query(query);
+
+            // Check if the user has already purchased the product
+            let checkQuery = `
+                SELECT * FROM LoggedInUser_Product 
+                WHERE ID_LoggedInUser = @ID_LoggedInUser AND ID_Product = @ID_Product
+            `;
+            const checkResult = await req.query(checkQuery);
+
+            if (checkResult.recordset.length > 0) {
+                let updateQuery = `
+                    UPDATE LoggedInUser_Product
+                    SET quantity = quantity + @quantity, 
+                        purchaseDateTime = @purchaseDateTime
+                    WHERE ID_LoggedInUser = @ID_LoggedInUser AND ID_Product = @ID_Product
+                `;
+                await req.query(updateQuery);
+            } else {
+                let insertQuery = `
+                    INSERT INTO LoggedInUser_Product (ID_LoggedInUser, ID_Product, purchaseDateTime, quantity) 
+                    VALUES (@ID_LoggedInUser, @ID_Product, @purchaseDateTime, @quantity)
+                `;
+                await req.query(insertQuery);
+            }
+
+            await transaction.commit();
         } catch (err) {
-            console.error('Error in addProductToUser:', err);
+            await transaction.rollback();
+            console.error('Error in addOrUpdateProductToUser:', err);
             throw err;
         }
     }
@@ -809,6 +863,74 @@ class ProductRepository {
             throw err;
         }
     }
+
+    /**
+     * Retrieves a purchased product for a specific user.
+     *
+     * @param {number} userId - The ID of the user.
+     * @param {number} productId - The ID of the product.
+     * @returns {Promise<Object|null>}
+     */
+    async getPurchasedProductByUserAndProduct(userId, productId) {
+        try {
+            const req = new mssql.Request(this.conn);
+            req.input('ID_LoggedInUser', mssql.Int, userId)
+                .input('ID_Product', mssql.Int, productId);
+            const query = `
+                SELECT * FROM LoggedInUser_Product 
+                WHERE ID_LoggedInUser = @ID_LoggedInUser AND ID_Product = @ID_Product
+            `;
+            const result = await req.query(query);
+            return result.recordset.length > 0 ? result.recordset[0] : null;
+        } catch (err) {
+            console.error('Error in getPurchasedProductByUserAndProduct:', err);
+            throw err;
+        }
+    }
+
+    /**
+     * Decreases the quantity of a purchased product for a specific user and removes the record if quantity reaches 0.
+     *
+     * @param {number} userId - The ID of the user.
+     * @param {number} productId - The ID of the product.
+     * @param {number} decreaseBy - The amount to decrease the product's quantity.
+     * @returns {Promise<void>}
+     */
+    async decreasePurchasedProductQuantity(userId, productId, decreaseBy) {
+        const transaction = new mssql.Transaction(this.conn);
+
+        try {
+            await transaction.begin();
+
+            const req = new mssql.Request(transaction);
+            req.input('ID_LoggedInUser', mssql.Int, userId)
+                .input('ID_Product', mssql.Int, productId)
+                .input('decreaseBy', mssql.Int, decreaseBy);
+
+            let query = `
+                UPDATE LoggedInUser_Product
+                SET quantity = CASE 
+                    WHEN quantity - @decreaseBy <= 0 THEN 0
+                    ELSE quantity - @decreaseBy
+                END
+                WHERE ID_LoggedInUser = @ID_LoggedInUser AND ID_Product = @ID_Product AND quantity >= @decreaseBy
+            `;
+            await req.query(query);
+
+            query = `
+                DELETE FROM LoggedInUser_Product
+                WHERE ID_LoggedInUser = @ID_LoggedInUser AND ID_Product = @ID_Product AND quantity = 0
+            `;
+            await req.query(query);
+
+            await transaction.commit();
+        } catch (err) {
+            await transaction.rollback();
+            console.error('Error in decreasePurchasedProductQuantity:', err);
+            throw err;
+        }
+    }
+    
 }
 
 class CartRepository {

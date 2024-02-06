@@ -31,18 +31,53 @@
         <a href="/userlist" class="user-list-link">User List</a>
     <% } %>
 
-    <!-- TODO -->
+
+    <% if (typeof functionResult !== 'undefined' && typeof usedProduct !== 'undefined' && typeof argumentUsed !== 'undefined') { %>
+        <div class="function-result-display">
+            <span class="result-text">Result: <%= usedProduct.replace('(n)', '(' + argumentUsed + ')') %> = <%= functionResult %></span>
+            <a href="/download-function-result?functionResult=<%= functionResult %>&productName=<%= usedProduct %>&argument=<%= argumentUsed %>"
+                class="download-link">Download Result</a>
+        </div>
+    <% } %>
 
     <div class="purchased-products">
         <h2>Your Purchased Products</h2>
         <% if (purchasedProducts.length > 0) { %>
             <ul>
                 <% purchasedProducts.forEach(product => { %>
-                    <li>
+                    <!-- <li>
                         <strong><%= product.productName %></strong>
                         <% if (product.quantity) { %>
                             <span>- Quantity: <%= product.quantity %></span>
                         <% } %>
+
+                        <form action="/use-product" method="POST">
+                            <input type="hidden" name="productName" value="<%= product.productName %>">
+                            <% if (product.productName.includes('(n)')) { %>
+                                <input type="text" name="argument" placeholder="Enter argument">
+                            <% } %>
+                            <button type="submit">Use Product</button>
+                        </form>
+                    </li> -->
+                    <li>
+                        <div class="product-info">
+                            <strong><%= product.productName %></strong>
+                            <div class="product-quantity">
+                                <% if (product.quantity > 0) { %>
+                                    <span>Quantity: <%= product.quantity %></span>
+                                <% } else { %>
+                                    <span class="out-of-stock">Out of stock</span>
+                                <% } %>
+                            </div>
+                        </div>
+            
+                        <form action="/use-product" method="POST" class="product-use-form">
+                            <input type="hidden" name="productName" value="<%= product.productName %>">
+                            <% if (product.productName.includes('(n)')) { %>
+                                <input type="text" name="argument" placeholder="Enter argument" class="product-argument-input">
+                            <% } %>
+                            <button type="submit" class="use-product-button">Use Product</button>
+                        </form>
                     </li>
                 <% }); %>
             </ul>

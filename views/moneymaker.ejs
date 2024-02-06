@@ -18,8 +18,8 @@
 
     <div id="moneymaker-container">
         <div class="info-container">
-            <p class="info">User Balance: <span id="user-balance">0</span>$</p>
-            <p class="info">Multiplier: <span id="user-multiplier">1</span>x</p>
+            <p class="info">User Balance: $<span id="user-balance"><%= balance %></span></p>
+            <p class="info">Multiplier: x<span id="user-multiplier">1</span></p>
         </div>
         <button id="money-button">Make money!</button>
     </div>
@@ -28,7 +28,7 @@
     <script>
         const socket = io();
         const user = '<%= user %>';
-        let balance = <%= locals.balance %>;
+        let balance = '<%= locals.balance %>';
         let multiplier = <%= locals.multiplier %>;
 
         const moneyButton = document.getElementById('money-button');
@@ -44,7 +44,7 @@
     
         socket.on('balanceUpdated', (data) => {
             if (data.username === user) {
-                userBalance.textContent = data.balance.toFixed(2); //data.balance;
+                userBalance.textContent = data.balance.toFixed(2);
                 balance = data.balance;
             }
         });

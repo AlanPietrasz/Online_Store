@@ -1,42 +1,55 @@
 /* moneymakerstyle.css */
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f7f7f7;
+
+/* .info-container {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+} */
+.info-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px; /* Add space below the info boxes */
+}
+
+/* .info {
+    margin: 0;
+    padding: 5px 10px;
+    background-color: #007bff;
+    color: white;
+    display: inline-block;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+} */
+
+.info {
+    margin: 0 10px; /* Add horizontal space between info boxes */
+    padding: 10px 20px; /* Increase padding for a more balanced look */
+    background-color: #007bff; /* Adjusted to match the button color for consistency */
+    color: white;
+    border-radius: 20px; /* Increase border-radius for a pill-like shape */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); /* Slightly more prominent shadow */
+    font-weight: bold; /* Make the text bold */
+    font-size: 1.2em; /* Increase font size for better readability */
 }
 
 #moneymaker-container {
     text-align: center;
     position: relative;
+    padding-top: 50px;
 }
-
-.info {
-    display: inline-block;
-    background-color: #007bff;
-    color: white;
-    padding: 10px;
-    border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    margin-right: 10px;
-    z-index: 1000;
-}
-
 
 #money-button {
     background-color: #28a745;
     color: white;
     border: none;
     border-radius: 50%;
-    width: 300px;
-    height: 300px;
-    font-size: 30px;
+    width: 120px;
+    height: 120px;
+    font-size: 18px;
     cursor: pointer;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
     outline: none;
     transition: box-shadow 0.2s ease, transform 0.2s ease;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
 }
 
 #money-button:hover {
@@ -46,16 +59,4 @@ body {
 #money-button:active {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     transform: translateY(4px);
-}
-
-.info-container {
-    position: fixed;
-    top: 150px;
-    right: 20px;
-    text-align: right;
-    z-index: 1000;
-}
-
-#moneymaker-container {
-    margin-top: 250px;
-}
+} 

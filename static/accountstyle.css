@@ -153,15 +153,15 @@
 .purchased-products {
     margin-top: 20px;
     padding: 15px;
-    border-top: 1px solid #eaeaea; /* subtler border color */
-    background-color: #f9f9f9; /* light background for the section */
-    border-radius: 8px; /* optional: rounded corners */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* optional: adds depth */
+    border-top: 1px solid #eaeaea; 
+    background-color: #f9f9f9;
+    border-radius: 8px; 
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .purchased-products h2 {
     margin-bottom: 15px;
-    color: #333; /* dark color for better readability */
+    color: #333; 
 }
 
 .purchased-products ul {
@@ -171,36 +171,180 @@
 }
 
 .purchased-products li {
-    margin-bottom: 10px; /* increased space */
-    padding: 8px; /* padding inside each list item */
-    transition: background-color 0.3s; /* smooth transition for hover effect */
+    margin-bottom: 10px; 
+    padding: 8px; 
+    transition: background-color 0.3s;
 }
 
 .purchased-products li:hover {
-    background-color: #efefef; /* hover effect */
+    background-color: #efefef; 
 }
 
 .purchased-products li strong {
-    font-weight: bold; /* emphasis on product name */
+    font-weight: bold;
 }
 
 .purchased-products li span {
     font-style: italic;
-    color: #555; /* subtle color for quantity */
-    margin-left: 10px; /* space between product name and quantity */
+    color: #555;
+    margin-left: 10px;
 }
 
 .user-list-link {
     display: inline-block;
-    background-color: #4CAF50; /* Zielony kolor tła */
-    color: white; /* Biały tekst */
-    padding: 10px 20px; /* Padding wokół tekstu */
-    margin-top: 20px; /* Margines na górze dla odstępu */
-    border-radius: 5px; /* Zaokrąglone rogi */
-    text-decoration: none; /* Usuwa podkreślenie */
-    transition: background-color 0.3s; /* Animacja zmiany koloru */
+    background-color: #4CAF50; 
+    color: white; 
+    padding: 10px 20px; 
+    margin-top: 20px; 
+    border-radius: 5px; 
+    text-decoration: none;
+    transition: background-color 0.3s;
 }
 
 .user-list-link:hover {
-    background-color: #45a049; /* Ciemniejszy zielony kolor przy najechaniu */
+    background-color: #45a049;
 }
+
+.download-link {
+    margin-left: 10px;
+    color: #007bff;
+    text-decoration: none;
+}
+
+
+/* Style for the function result display */
+.function-result-container {
+    text-align: center;
+    margin: 20px 0;
+    padding: 10px;
+    background-color: #e7f4e4;
+    border-radius: 5px;
+    border-left: 5px solid #5cb85c;
+    display: inline-block;
+}
+
+.function-result-container span {
+    margin-right: 15px;
+    font-weight: bold;
+    color: #4a7d49;
+}
+
+/* Style for the purchased products list */
+.purchased-products {
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin: 20px auto;
+    width: 80%;
+    max-width: 600px;
+}
+
+.purchased-products h2 {
+    border-bottom: 2px solid #e7f4e4;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    text-align: center;
+    color: #333;
+}
+
+.purchased-products ul {
+    list-style: none;
+    padding: 0;
+}
+
+.purchased-products li {
+    padding: 10px;
+    border-bottom: 1px solid #e7f4e4;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.purchased-products li:last-child {
+    border-bottom: none;
+}
+
+.purchased-products li strong {
+    font-size: 1.1em;
+    color: #333;
+}
+
+.purchased-products li form {
+    margin-left: auto;
+}
+
+/* Style for the 'Use Product' button */
+.purchased-products button {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 5px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.purchased-products button:hover {
+    background-color: #218838;
+}
+
+/* Download link styling */
+.download-link {
+    color: #105dab;
+    text-decoration: none;
+    font-size: 0.9em;
+    background-color: #d1e7ff;
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: 1px solid #b6d4fe;
+    transition: background-color 0.2s;
+}
+
+.download-link:hover {
+    background-color: #c5dcf9;
+}
+
+/* function-result-display */
+
+.function-result-display {
+    background-color: #eef6ee; /* Light green background for visibility */
+    border: 1px solid #d4e2d4; /* Subtle border color */
+    border-radius: 8px; /* Rounded corners for the result display box */
+    padding: 10px 20px; /* Padding around the content */
+    margin-bottom: 20px; /* Space before the list of products starts */
+    text-align: center; /* Center the text inside the div */
+    display: flex; /* Use flexbox for alignment */
+    justify-content: space-between; /* Space between the result and the download link */
+    align-items: center; /* Align items vertically */
+    max-width: 600px; /* Max width of the result display box */
+    margin-left: auto; /* Center the box horizontally */
+    margin-right: auto;
+}
+
+.result-text {
+    font-size: 1.2em; /* Make the result text larger */
+    color: #2e8b57; /* Dark green color for the result text for readability */
+    font-weight: bold; /* Make the result text bold */
+}
+
+.download-link {
+    padding: 5px 10px;
+    background-color: #dff0d8; /* Light green background for the download link */
+    border-radius: 5px; /* Rounded corners for the download link */
+    color: #3c763d; /* Dark green color for the link text */
+    text-decoration: none; /* No underline for the link */
+    margin-left: 15px; /* Space from the result text */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Subtle shadow for depth */
+    transition: background-color 0.3s; /* Transition for the hover effect */
+}
+
+.download-link:hover {
+    background-color: #c3e6cb; /* Slightly darker green on hover */
+    text-decoration: none; /* No underline on hover */
+}
+
+
+
+
