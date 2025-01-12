@@ -1,4 +1,5 @@
 // repositories.js
+// typeorm , sequelize
 var mssql = require('mssql');
 var bcrypt = require('bcrypt');
 
