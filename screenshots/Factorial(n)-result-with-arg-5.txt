@@ -1,0 +1,1 @@
+Result for product Factorial(n) with argument (5): 120
